@@ -14,8 +14,6 @@ interface ErrorEnvelope {
   error: {
     code: number;
     message: string;
-    kind?: string;
-    requestId?: string;
     issues?: string[];
   };
 }
@@ -39,19 +37,11 @@ export function buildErrorEnvelope(
   exitCode: number,
   message: string,
   issues?: string[],
-  kind?: string,
-  requestId?: string,
 ): ErrorEnvelope {
   const error: ErrorEnvelope["error"] = {
     code: exitCode,
     message,
   };
-  if (kind !== undefined) {
-    error.kind = kind;
-  }
-  if (requestId !== undefined) {
-    error.requestId = requestId;
-  }
   if (issues !== undefined) {
     error.issues = issues;
   }

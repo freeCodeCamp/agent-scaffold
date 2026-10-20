@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { redact, redactObject } from "../../src/output/redact.js";
+import { redact } from "../../src/output/redact.js";
 
 describe("redact", () => {
   it("masks AWS access key IDs (AKIA prefix)", () => {
@@ -75,58 +75,5 @@ describe("redact", () => {
     const result = redact("Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.payload.signature");
     expect(result).not.toContain("eyJhbGciOiJIUzI1NiJ9.payload.signature");
     expect(result).toContain("****");
-  });
-});
-
-describe("redactObject", () => {
-  it("deep-redacts string values that look like credentials", () => {
-    const obj = {
-      accessKeyId: "AKIAIOSFODNN7EXAMPLE",
-      bucket: "my-bucket",
-      nested: {
-        secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-      },
-    };
-    const result = redactObject(obj);
-    expect(result.accessKeyId).toContain("****");
-    expect(result.bucket).toBe("my-bucket");
-    const nested = result.nested as Record<string, unknown>;
-    expect(nested.secretAccessKey).toContain("****");
-  });
-
-  it("preserves non-string values", () => {
-    const obj = { count: 42, flag: true, name: "safe-string" };
-    const result = redactObject(obj);
-    expect(result).toEqual({ count: 42, flag: true, name: "safe-string" });
-  });
-
-  it("handles arrays inside objects", () => {
-    const obj = {
-      keys: ["AKIAIOSFODNN7EXAMPLE", "normal-value"],
-    };
-    const result = redactObject(obj);
-    const keys = result.keys as string[];
-    expect(keys[0]).toContain("****");
-    expect(keys[1]).toBe("normal-value");
-  });
-
-  it("masks values for credential key names regardless of format", () => {
-    const obj = {
-      accessKeyId: "shortval",
-      secretAccessKey: "anyvalue",
-      access_key_id: "cf-key-12345",
-      secret_access_key: "cf-secret-67890",
-    };
-    const result = redactObject(obj);
-    expect(result.accessKeyId).toBe("****");
-    expect(result.secretAccessKey).toBe("****");
-    expect(result.access_key_id).toBe("****");
-    expect(result.secret_access_key).toBe("****");
-  });
-
-  it("does not mutate the original object", () => {
-    const obj = { key: "AKIAIOSFODNN7EXAMPLE" };
-    redactObject(obj);
-    expect(obj.key).toBe("AKIAIOSFODNN7EXAMPLE");
   });
 });

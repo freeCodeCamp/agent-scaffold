@@ -74,7 +74,7 @@ Error:
 | ---- | -------------- | --------------------------------------------- |
 | `0`  | `EXIT_SUCCESS` | The command succeeded.                        |
 | `10` | `EXIT_USAGE`   | A flag or an input is not valid.              |
-| `11` | `EXIT_CONFIG`  | The CLI cannot get the templates.             |
+| `11` | `EXIT_CONFIG`  | The templates are missing or not valid, or the skill install failed. |
 | `15` | `EXIT_GIT`     | The CLI cannot initialise the git repository. |
 
 ## Environment variables

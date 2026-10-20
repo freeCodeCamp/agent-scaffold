@@ -76,7 +76,9 @@ jobs:
           cache: "pnpm"
           registry-url: "https://registry.npmjs.org"
       - run: pnpm install --frozen-lockfile
-      - run: pnpm tsdown
+      - run: pnpm build
+      # dist/templates.tgz holds the templates; a package without it cannot scaffold.
+      - run: test -f dist/templates.tgz
       # package.json is already at the release version (release-please bumped it
       # on the tagged commit). Stable-only: dist-tag is always `latest`.
       # --provenance is implicit under Trusted Publishing; kept explicit.

@@ -1,12 +1,4 @@
-import {
-  EXIT_CONFIG,
-  EXIT_CONFIRM,
-  EXIT_CREDENTIALS,
-  EXIT_GIT,
-  EXIT_PARTIAL,
-  EXIT_STORAGE,
-  EXIT_USAGE,
-} from "./output/exit-codes.js";
+import { EXIT_CONFIG, EXIT_GIT, EXIT_USAGE } from "./output/exit-codes.js";
 
 /**
  * Domain error hierarchy. Each subclass binds to a stable EXIT_* code from
@@ -26,24 +18,8 @@ export class ConfigError extends CliError {
   readonly exitCode = EXIT_CONFIG;
 }
 
-export class CredentialError extends CliError {
-  readonly exitCode = EXIT_CREDENTIALS;
-}
-
-export class StorageError extends CliError {
-  readonly exitCode = EXIT_STORAGE;
-}
-
 export class GitError extends CliError {
   readonly exitCode = EXIT_GIT;
-}
-
-export class ConfirmError extends CliError {
-  readonly exitCode = EXIT_CONFIRM;
-}
-
-export class PartialUploadError extends CliError {
-  readonly exitCode = EXIT_PARTIAL;
 }
 
 export class UsageError extends CliError {

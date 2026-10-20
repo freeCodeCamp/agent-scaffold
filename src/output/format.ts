@@ -2,7 +2,7 @@ import { log } from "@clack/prompts";
 import { CliError } from "../errors.js";
 import { buildEnvelope, buildErrorEnvelope } from "./envelope.js";
 import { EXIT_USAGE } from "./exit-codes.js";
-import { redact, redactObject } from "./redact.js";
+import { redact } from "./redact.js";
 
 export type OutputContext = {
   json: boolean;
@@ -18,19 +18,11 @@ export interface OutputErrorOptions {
   /** Sub-errors / hints rendered into envelope.error.issues. */
   issues?: string[];
   /**
-   * Extra top-level keys spliced into the JSON envelope. Used by
-   * promote/rollback drift to carry `current` so scripted callers can
-   * re-pin expectedCurrent on retry without re-querying the alias.
-   */
-  extras?: Record<string, unknown>;
-  /**
    * Dep-injected logger for the non-JSON branch. Defaults to clack
    * `log.error`. Commands pass their dep's logError so unit tests can
    * spy without monkey-patching the clack module.
    */
   logError?: (msg: string) => void;
-  kind?: string;
-  requestId?: string;
 }
 
 export function emitJson(envelope: object): void {
@@ -67,13 +59,9 @@ export function outputError(
   if (typeof exitCodeOrErr === "number") {
     return renderError(ctx, exitCodeOrErr, messageOrOpts as string, maybeOpts);
   }
-  const { exitCode, message, kind, requestId } = parseError(ctx.command, exitCodeOrErr);
+  const { exitCode, message } = parseError(exitCodeOrErr);
   const opts = (messageOrOpts ?? {}) as OutputErrorOptions;
-  return renderError(ctx, exitCode, message, {
-    ...opts,
-    kind: opts.kind ?? kind,
-    requestId: opts.requestId ?? requestId,
-  });
+  return renderError(ctx, exitCode, message, opts);
 }
 
 function renderError(
@@ -89,21 +77,8 @@ function renderError(
   const redactedIssues = opts.issues?.map(redact);
 
   if (ctx.json) {
-    const envelope = buildErrorEnvelope(
-      ctx.command,
-      exitCode,
-      redactedMessage,
-      redactedIssues,
-      opts.kind,
-      opts.requestId,
-    );
-    // opts.extras passes through redactObject so a future caller who
-    // stuffs a token / credential into the extras map doesn't leak it.
-    // Today's only callers (promote / rollback drift) pass `{ current:
-    // <deployId> }`; redact() is a no-op on a deploy id, so the
-    // observable behaviour is unchanged.
-    const payload = opts.extras ? { ...envelope, ...redactObject(opts.extras) } : envelope;
-    process.stdout.write(JSON.stringify(payload) + "\n");
+    const envelope = buildErrorEnvelope(ctx.command, exitCode, redactedMessage, redactedIssues);
+    process.stdout.write(JSON.stringify(envelope) + "\n");
   } else {
     (opts.logError ?? ((m: string) => log.error(m, { output: process.stderr })))(redactedMessage);
   }
@@ -117,10 +92,7 @@ function renderError(
  *   Error      → preserve message verbatim
  *   other      → String(err)
  */
-export function parseError(
-  _command: string,
-  err: unknown,
-): { exitCode: number; message: string; kind?: string; requestId?: string } {
+export function parseError(err: unknown): { exitCode: number; message: string } {
   if (err instanceof CliError) {
     return { exitCode: err.exitCode, message: err.message };
   }

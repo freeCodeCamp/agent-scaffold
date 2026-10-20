@@ -7,14 +7,6 @@ const HEX_CREDENTIAL_CONTEXT_PATTERN =
 const JSON_CREDENTIAL_PATTERN =
   /"(?:secret|password|token|key|credential|auth|access_key_id|secret_access_key|accessKeyId|secretAccessKey)"\s*:\s*"[^"]+"/gi;
 const BEARER_PATTERN = /\bBearer\s+[A-Za-z0-9._~+/=-]+/gi;
-const CREDENTIAL_KEY_PATTERN = /(?:secret|password|token|key|credential|auth)/i;
-const EXACT_CREDENTIAL_KEYS = new Set([
-  "accesskeyid",
-  "secretaccesskey",
-  "access_key_id",
-  "secret_access_key",
-]);
-const STANDALONE_LONG_SECRET = /^[A-Za-z0-9/+=]{21,}$/;
 
 function maskAwsKey(match: string): string {
   return match.slice(0, 4) + "****" + match.slice(-4);
@@ -59,38 +51,5 @@ export function redact(value: string): string {
     const prefix = _match.slice(0, sepIndex + 1);
     return prefix + "****";
   });
-  return result;
-}
-
-function redactValue(value: unknown, keyName?: string): unknown {
-  if (typeof value === "string") {
-    if (keyName && EXACT_CREDENTIAL_KEYS.has(keyName.toLowerCase())) {
-      return "****";
-    }
-    const redacted = redact(value);
-    if (
-      redacted === value &&
-      keyName &&
-      CREDENTIAL_KEY_PATTERN.test(keyName) &&
-      STANDALONE_LONG_SECRET.test(value)
-    ) {
-      return "****";
-    }
-    return redacted;
-  }
-  if (Array.isArray(value)) {
-    return value.map((v) => redactValue(v, keyName));
-  }
-  if (value !== null && typeof value === "object") {
-    return redactObject(value as Record<string, unknown>);
-  }
-  return value;
-}
-
-export function redactObject(obj: Record<string, unknown>): Record<string, unknown> {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    result[key] = redactValue(value, key);
-  }
   return result;
 }

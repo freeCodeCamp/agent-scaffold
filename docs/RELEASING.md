@@ -10,6 +10,14 @@ Release `@freecodecamp/agent-scaffold` to npm. [release-please](https://github.c
 | No NPM_TOKEN                | The workflow uses OIDC. Provenance attestations are automatic. Do not store an npm token.                                                                              |
 | Do not rename `release.yml` | The Trusted Publisher binding uses the workflow filename. A rename breaks publishing.                                                                                  |
 
+## First publish
+
+npm accepts a Trusted Publisher only for a package that is already on the registry.
+
+1. On a clean checkout of the release commit, run `pnpm install --frozen-lockfile && pnpm build`.
+1. Run `npm publish --access public --auth-type=web`. Use an account with write access to the `@freecodecamp` scope.
+1. Set the Trusted Publisher for the package. See the prerequisites table.
+
 ## Cut a release
 
 1. Land `feat:` and `fix:` commits on `main`.
