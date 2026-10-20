@@ -1,6 +1,6 @@
 # agent-scaffold
 
-TypeScript CLI with one command, `create`. It scaffolds new projects for humans and coding agents.
+freeCodeCamp Scaffold Tool: a TypeScript CLI that scaffolds new projects for humans and coding agents. Commands: `create` and `list`.
 
 - Read [`docs/README.md`](docs/README.md) before you change CLI code.
 - Read [`docs/reference.md`](docs/reference.md) for flags, JSON output, and exit codes.

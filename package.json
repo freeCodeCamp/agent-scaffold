@@ -1,7 +1,7 @@
 {
   "name": "@freecodecamp/agent-scaffold",
   "version": "0.1.0",
-  "description": "Scaffold new projects for humans and coding agents",
+  "description": "freeCodeCamp Scaffold Tool. Make coding agents less dumb. Save time, money, sanity.",
   "keywords": [
     "agents",
     "cli",

@@ -1,6 +1,6 @@
 # agent-scaffold
 
-`agent-scaffold` has one command: `create`. It scaffolds a new project for humans and coding agents. See [reference.md](reference.md) for flags, JSON output, and exit codes.
+`agent-scaffold` is the freeCodeCamp Scaffold Tool. It has two commands: `create` scaffolds a new project, and `list` shows the values that `create` accepts. See [reference.md](reference.md) for flags, JSON output, and exit codes.
 
 ## The create pipeline
 
