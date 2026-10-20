@@ -60,6 +60,9 @@ describe(CreateInputValidationService, () => {
       });
 
     expect(act).toThrow(UsageError);
+    expect(act).toThrow(
+      'invalid project name "InvalidName": use lowercase letters and digits, with single hyphens between them (no leading, trailing, or double hyphen)',
+    );
   });
 
   it("rejects existing target directory", () => {

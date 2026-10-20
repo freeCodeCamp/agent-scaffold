@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, rename, rm } from "node:fs/promises";
+import { mkdir, readFile, readdir, rename, rm } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -21,6 +21,23 @@ const cacheBase = (): string => {
   return join(xdg && xdg.length > 0 ? xdg : join(homedir(), ".cache"), "agent-scaffold");
 };
 
+const CACHE_ENTRY = /^[0-9a-f]{16}$/;
+
+// Best effort: remove cache entries of older template hashes. Temporary
+// directories of concurrent runs do not match CACHE_ENTRY, so they stay.
+const pruneStaleExtractions = async (templatesRoot: string, keep: string): Promise<void> => {
+  try {
+    const entries = await readdir(templatesRoot);
+    await Promise.all(
+      entries
+        .filter((entry) => entry !== keep && CACHE_ENTRY.test(entry))
+        .map((entry) => rm(join(templatesRoot, entry), { force: true, recursive: true })),
+    );
+  } catch {
+    // Ignore: a stale cache entry is harmless.
+  }
+};
+
 // npm drops .gitignore files and symlinks from a published package, so the
 // build ships templates as dist/templates.tgz. Extract it once per content hash.
 const extractTarball = async (tarball: string, base: string): Promise<string> => {
@@ -36,6 +53,7 @@ const extractTarball = async (tarball: string, base: string): Promise<string> =>
   try {
     await execFileAsync("tar", ["xzf", tarball, "-C", tmp]);
     await rename(tmp, target);
+    await pruneStaleExtractions(join(base, "templates"), hash);
   } catch (err) {
     await rm(tmp, { force: true, recursive: true });
     if (existsSync(join(target, "labels.json"))) return target;

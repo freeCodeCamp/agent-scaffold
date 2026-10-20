@@ -17,6 +17,8 @@ Node.js 24 or later is required.
 
 ## Use
 
+Agents: run `npx @freecodecamp/agent-scaffold list --json` first. It lists the values that `create` accepts.
+
 ### Interactive
 
 Run `agent-scaffold create`. Answer the prompts. The CLI creates a new directory in the current directory.

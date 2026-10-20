@@ -35,6 +35,7 @@ function cliFlags(group: string, command: string): string[] {
 describe("docs/reference.md command table", () => {
   for (const [documented, group, implemented] of [
     ["agent-scaffold create", "cli", "create"],
+    ["agent-scaffold list", "cli", "list"],
   ] as const) {
     it(`lists every ${documented} flag the CLI defines`, () => {
       const declared = cliFlags(group, implemented);

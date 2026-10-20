@@ -3,10 +3,6 @@
     "devCopySource": "COPY src/ ./src/",
     "port": 3000,
     "recommended": true,
-    "skills": [
-      { "repo": "freeCodeCamp/skills", "skill": "express-basics" },
-      { "repo": "freeCodeCamp/skills", "skill": "testing" }
-    ],
     "watchSync": [{ "path": "./src", "target": "/app/src" }]
   },
   "html-css-js": {

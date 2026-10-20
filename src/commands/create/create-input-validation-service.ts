@@ -42,7 +42,7 @@ class CreateInputValidationService implements CreateInputValidator {
     }
 
     throw new UsageError(
-      `invalid project name "${name}": use 3–50 lowercase letters, digits, or hyphens, starting with a letter`,
+      `invalid project name "${name}": use lowercase letters and digits, with single hyphens between them (no leading, trailing, or double hyphen)`,
     );
   }
 

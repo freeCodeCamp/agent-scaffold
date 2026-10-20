@@ -1,5 +1,6 @@
 import { Command } from "commander";
 import { create } from "./commands/create/index.js";
+import { list } from "./commands/list.js";
 import { outputError } from "./output/format.js";
 import { EXIT_USAGE, exitWithCode } from "./output/exit-codes.js";
 
@@ -55,6 +56,19 @@ export async function run(argv = process.argv): Promise<void> {
         });
       } catch (err: unknown) {
         handleActionError("create", opts.json ?? false, err);
+      }
+    });
+
+  cli
+    .command("list")
+    .alias("ls")
+    .description("List the runtimes, frameworks and package managers that create accepts")
+    .action(async (_opts, cmd: Command) => {
+      const opts = cmd.optsWithGlobals<{ json?: boolean }>();
+      try {
+        await list({ json: opts.json ?? false });
+      } catch (err: unknown) {
+        handleActionError("list", opts.json ?? false, err);
       }
     });
 

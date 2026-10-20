@@ -119,6 +119,20 @@ describe(composeLayerFiles, () => {
       expect(composeLayerFiles(layers).files["README.md"]).toBe("# Node\n");
     });
 
+    it("later layer replaces AGENTS.md from earlier layer", () => {
+      const layers: ResolvedLayer[] = [
+        { files: { "AGENTS.md": "# Base\n" }, layerType: "always", name: "always", symlinks: {} },
+        {
+          files: { "AGENTS.md": "# Astro\n" },
+          layerType: "frameworks",
+          name: "frameworks/astro-react",
+          symlinks: {},
+        },
+      ];
+
+      expect(composeLayerFiles(layers).files["AGENTS.md"]).toBe("# Astro\n");
+    });
+
     it("README.md in nested path is also overwritable", () => {
       const layers: ResolvedLayer[] = [
         {

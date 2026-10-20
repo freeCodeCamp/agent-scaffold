@@ -16,8 +16,6 @@ import type { DonationConfigWriter } from "./io/donation-config-writer.port.js";
 import { LocalDonationConfigWriter } from "./io/local-donation-config-writer.js";
 import type { RepoInitialiser } from "./io/repo-initialiser.port.js";
 import { GitRepoInitialiser } from "./io/git-repo-initialiser.js";
-import type { SkillInstaller } from "./io/skill-installer.port.js";
-import { NpxSkillInstaller } from "./io/npx-skill-installer.js";
 import {
   CreateInputValidationService,
   type CreateInputValidator,
@@ -68,7 +66,6 @@ export interface CreateDeps {
   packageManager?: PackageManager;
   prompt?: Prompt;
   repoInitialiser?: RepoInitialiser;
-  skillInstaller?: SkillInstaller;
   spinner?: Spinner;
   loadLayersFn?: (dir: string) => Promise<TemplateData>;
   validator?: CreateInputValidator;
@@ -87,7 +84,6 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
     });
   const donationConfigWriter = deps.donationConfigWriter ?? new LocalDonationConfigWriter();
   const repoInitialiser = deps.repoInitialiser ?? new GitRepoInitialiser();
-  const skillInstaller = deps.skillInstaller ?? new NpxSkillInstaller();
   const isTTY = process.stdin.isTTY;
   const spinner = deps.spinner ?? (options.json || !isTTY ? silentSpinner() : clackSpinner());
 
@@ -220,19 +216,6 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
         pmVersion: registry["package-managers"][manager]?.pmVersion ?? "",
         projectDirectory: targetDirectory,
       });
-    }
-
-    const skills = registry.frameworks[validatedInput.framework]?.skills;
-    if (skills && skills.length > 0) {
-      spinner.message("Installing skills");
-      try {
-        await skillInstaller.installSkills(skills, targetDirectory);
-      } catch (err) {
-        // Non-fatal: the project is already scaffolded. Route the failure to
-        // the logger (stderr / silent in --json mode) so it never lands on
-        // stdout and corrupts emitJson's envelope.
-        logger.error(err instanceof Error ? err.message : String(err));
-      }
     }
 
     spinner.message("Writing donation config");

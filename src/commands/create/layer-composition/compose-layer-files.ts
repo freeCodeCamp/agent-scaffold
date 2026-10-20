@@ -15,7 +15,7 @@ interface FileOwner {
 
 const CONFIG_EXTENSIONS = new Set([".json", ".yaml", ".yml"]);
 const CONCAT_FILENAMES = new Set([".dockerignore", ".gitignore"]);
-const OVERWRITABLE_FILENAMES = new Set(["README.md"]);
+const OVERWRITABLE_FILENAMES = new Set(["AGENTS.md", "README.md"]);
 
 const isConfigFile = (filePath: string): boolean =>
   [...CONFIG_EXTENSIONS].some((ext) => filePath.endsWith(ext));

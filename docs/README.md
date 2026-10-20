@@ -9,9 +9,8 @@
 1. Prompt. In interactive mode, ask for the project inputs. In non-interactive mode, read the flags.
 1. Validate. Check the inputs against the template registry.
 1. Compose layers. Merge the template layers that match the inputs.
-1. Write files. Write the project files and the symlinks to a new directory.
+1. Write files. Write the project files and the symlinks to a new directory. The agent skills ship inside the templates in `.agents/skills/`. The symlinks in `.claude/skills/` link to them.
 1. Pin dependencies. Run the package manager to pin the dependency versions.
-1. Install skills. Install the agent skills for the framework. A failure here does not stop the command.
 1. Initialise git. Run `git init` in the new directory.
 
 ## Repo layout

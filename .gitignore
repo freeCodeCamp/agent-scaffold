@@ -1,5 +1,5 @@
 node_modules/
-dist/
+/dist/
 !tests/fixtures/**/dist/
 coverage/
 
@@ -12,4 +12,10 @@ coverage/
 .scratchpad/
 
 # Claude config
-.claude
+/.claude
+
+# Templates ship agent and editor files that global ignores often exclude.
+!/templates/**/.claude/
+!/templates/**/.vscode/
+!/templates/**/AGENTS.md
+!/templates/**/CLAUDE.md

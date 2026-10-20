@@ -89,7 +89,7 @@ export function Nav({ brand, showSidebarToggle = false }: NavProps) {
 
           <Button
             variant="primary"
-            href={`https://donate.freecodecamp.org?source=${cfg.donationId}&campaign=test-2026&medium=web`}
+            href={`https://donate.freecodecamp.org?source=${cfg.donationId}&campaign=agent-scaffold&medium=web`}
           >
             Donate
           </Button>

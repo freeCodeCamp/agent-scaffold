@@ -24,14 +24,19 @@ vi.mock("../src/output/exit-codes.js", async () => {
 vi.mock("../src/commands/create/index.js", () => ({
   create: vi.fn(),
 }));
+vi.mock("../src/commands/list.js", () => ({
+  list: vi.fn(),
+}));
 
 import { outputError } from "../src/output/format.js";
 import { exitWithCode } from "../src/output/exit-codes.js";
 import { create } from "../src/commands/create/index.js";
+import { list } from "../src/commands/list.js";
 
 const mockOutputError = vi.mocked(outputError);
 const mockExitWithCode = vi.mocked(exitWithCode);
 const mockCreate = vi.mocked(create);
+const mockList = vi.mocked(list);
 
 const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -75,6 +80,12 @@ describe("top-level CLI", () => {
     run(["node", "agent-scaffold", "--help"]);
     expect(output).toContain("agent-scaffold");
     expect(output).toContain("create");
+  });
+
+  it('--help shows "list" as a command', () => {
+    run(["node", "agent-scaffold", "--help"]);
+    expect(output).toContain("list|ls");
+    expect(output).toContain("List the runtimes, frameworks and package managers");
   });
 
   it("--help shows the global --json and --version options", () => {
@@ -167,6 +178,54 @@ describe("create command wiring", () => {
     run(["node", "agent-scaffold", "create", "--json"]);
     await settle();
     expect(mockCreate).toHaveBeenCalledWith(expect.objectContaining({ json: true }));
+  });
+});
+
+describe("list command wiring", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(process.stdout, "write").mockImplementation((() => true) as never);
+    vi.spyOn(process.stderr, "write").mockImplementation((() => true) as never);
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    vi.spyOn(process, "exit").mockImplementation((() => {}) as never);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("defaults json to false", async () => {
+    mockList.mockResolvedValue(undefined);
+    run(["node", "agent-scaffold", "list"]);
+    await settle();
+    expect(mockList).toHaveBeenCalledWith({ json: false });
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  it("forwards the global --json flag", async () => {
+    mockList.mockResolvedValue(undefined);
+    run(["node", "agent-scaffold", "list", "--json"]);
+    await settle();
+    expect(mockList).toHaveBeenCalledWith({ json: true });
+  });
+
+  it("accepts the ls alias", async () => {
+    mockList.mockResolvedValue(undefined);
+    run(["node", "agent-scaffold", "--json", "ls"]);
+    await settle();
+    expect(mockList).toHaveBeenCalledWith({ json: true });
+  });
+
+  it("routes a list failure through outputError", async () => {
+    const err = new Error("boom");
+    mockList.mockRejectedValue(err);
+    run(["node", "agent-scaffold", "list", "--json"]);
+    await settle();
+    expect(mockOutputError).toHaveBeenCalledWith(
+      expect.objectContaining({ command: "list", json: true }),
+      err,
+    );
+    expect(mockExitWithCode).toHaveBeenCalled();
   });
 });
 

@@ -19,7 +19,6 @@ import { CreateInputValidationService } from "../../../src/commands/create/creat
 import type { CreateSelections, Prompt } from "../../../src/commands/create/prompt/prompt.port.js";
 import type { DonationConfigWriter } from "../../../src/commands/create/io/donation-config-writer.port.js";
 import type { RepoInitialiser } from "../../../src/commands/create/io/repo-initialiser.port.js";
-import type { SkillInstaller } from "../../../src/commands/create/io/skill-installer.port.js";
 import type { ResolvedLayerSet } from "../../../src/commands/create/layer-composition/layer-composition-service.js";
 import { UsageError } from "../../../src/errors.js";
 import { loadFromDir } from "../../../src/commands/create/layer-composition/template-provider.js";
@@ -42,7 +41,6 @@ class StubDonationConfigWriter implements DonationConfigWriter {
 interface MakeDepsOptions {
   packageManager?: PackageManager;
   repoInitialiser?: RepoInitialiser;
-  skillInstaller?: SkillInstaller;
 }
 
 const createPromptPort = (selection: CreateSelections | null): Prompt => ({
@@ -129,7 +127,6 @@ const makeDeps = (cwd: string, prompt: Prompt, options: MakeDepsOptions = {}) =>
   const {
     packageManager = { specifyDeps: vi.fn(() => Promise.resolve()) },
     repoInitialiser = new StubRepoInitialiser(),
-    skillInstaller = { installSkills: vi.fn(() => Promise.resolve()) },
   } = options;
   return {
     cwd,
@@ -140,7 +137,6 @@ const makeDeps = (cwd: string, prompt: Prompt, options: MakeDepsOptions = {}) =>
     packageManager,
     prompt,
     repoInitialiser,
-    skillInstaller,
     spinner: { message: vi.fn(), start: vi.fn(), stop: vi.fn(), error: vi.fn() },
     validator: new CreateInputValidationService((path) => existsSync(join(cwd, path)), runtimeData),
   };
@@ -281,81 +277,6 @@ describe("create", () => {
 
     expect(deps.exit).not.toHaveBeenCalled();
     expect(repoInitialiser.initialise).toHaveBeenCalledWith(join(rootDirectory, name));
-  });
-
-  it("installs template-declared skills with the target directory", async () => {
-    const name = "node-skills-spy";
-    const selection = createNodeSelection({
-      framework: "express",
-      name,
-    });
-
-    const skillInstaller = {
-      installSkills: vi.fn(() => Promise.resolve()),
-    };
-
-    const deps = makeDeps(rootDirectory, createPromptPort(selection), {
-      skillInstaller,
-    });
-    await create({ json: false }, deps);
-
-    expect(deps.exit).not.toHaveBeenCalled();
-    expect(skillInstaller.installSkills).toHaveBeenCalledWith(
-      [
-        { repo: "freeCodeCamp/skills", skill: "express-basics" },
-        { repo: "freeCodeCamp/skills", skill: "testing" },
-      ],
-      join(rootDirectory, name),
-    );
-  });
-
-  it("installs skills before initialising the repo", async () => {
-    const selection = createNodeSelection({
-      framework: "express",
-      name: "node-skills-order",
-    });
-
-    const callOrder: string[] = [];
-    const skillInstaller = {
-      installSkills: vi.fn(() => {
-        callOrder.push("installSkills");
-        return Promise.resolve();
-      }),
-    };
-    const repoInitialiser = {
-      initialise: vi.fn(() => {
-        callOrder.push("initialise");
-        return Promise.resolve();
-      }),
-    };
-
-    const deps = makeDeps(rootDirectory, createPromptPort(selection), {
-      repoInitialiser,
-      skillInstaller,
-    });
-    await create({ json: false }, deps);
-
-    expect(deps.exit).not.toHaveBeenCalled();
-    expect(callOrder).toStrictEqual(["installSkills", "initialise"]);
-  });
-
-  it("does not install skills for a framework without a skills field", async () => {
-    const selection = createNodeSelection({
-      framework: "typescript",
-      name: "node-no-skills",
-    });
-
-    const skillInstaller = {
-      installSkills: vi.fn(() => Promise.resolve()),
-    };
-
-    const deps = makeDeps(rootDirectory, createPromptPort(selection), {
-      skillInstaller,
-    });
-    await create({ json: false }, deps);
-
-    expect(deps.exit).not.toHaveBeenCalled();
-    expect(skillInstaller.installSkills).not.toHaveBeenCalled();
   });
 
   it("snapshots generated Static scaffold output", async () => {
