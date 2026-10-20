@@ -3,7 +3,7 @@ import { GitError } from "../../../../src/errors.js";
 import { GitRepoInitialiser } from "../../../../src/commands/create/io/git-repo-initialiser.js";
 
 describe(GitRepoInitialiser, () => {
-  it("runs git init, git add ., and git commit in order", async () => {
+  it("checks the author identity, then runs git init, add and commit in order", async () => {
     const calls: [string, string[]][] = [];
     const run = vi.fn((command: string, args: string[]) => {
       calls.push([command, args]);
@@ -11,33 +11,35 @@ describe(GitRepoInitialiser, () => {
     });
     const adapter = new GitRepoInitialiser(run);
 
-    await adapter.initialise("/some/project");
+    await expect(adapter.initialise("/some/project")).resolves.toStrictEqual({ committed: true });
 
     expect(calls).toStrictEqual([
       ["git", ["init"]],
+      ["git", ["config", "user.name"]],
+      ["git", ["config", "user.email"]],
       ["git", ["add", "."]],
       ["git", ["commit", "-m", "chore: initial commit"]],
     ]);
   });
 
-  it("throws RepoInitialisationError when any git command exits non-zero", async () => {
+  it("throws GitError when a git command exits non-zero", async () => {
     const run = vi.fn(() => Promise.reject(new Error("git exited with code 128")));
     const adapter = new GitRepoInitialiser(run);
 
     await expect(adapter.initialise("/some/project")).rejects.toBeInstanceOf(GitError);
   });
 
-  it("keeps the repo with staged files when git has no author identity", async () => {
+  it("stages the files without a commit when git has no author identity", async () => {
     const calls: string[] = [];
     const run = vi.fn((_command: string, args: string[]) => {
-      calls.push(args[0] ?? "");
-      return args[0] === "commit"
-        ? Promise.reject(new Error("Command failed: git commit\nAuthor identity unknown"))
+      calls.push(args.join(" "));
+      return args.join(" ") === "config user.email"
+        ? Promise.reject(new Error("exit code 1"))
         : Promise.resolve();
     });
     const adapter = new GitRepoInitialiser(run);
 
-    await expect(adapter.initialise("/some/project")).resolves.toBeUndefined();
-    expect(calls).toStrictEqual(["init", "add", "commit"]);
+    await expect(adapter.initialise("/some/project")).resolves.toStrictEqual({ committed: false });
+    expect(calls).toStrictEqual(["init", "config user.name", "config user.email", "add ."]);
   });
 });

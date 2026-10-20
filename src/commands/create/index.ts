@@ -190,6 +190,12 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
 
     const validatedInput = validator.validateCreateInput(selections);
 
+    if (validatedInput.packageManager === "bun" && !isDockerAvailable()) {
+      throw new UsageError(
+        "bun needs Docker to pin dependencies. Start Docker, or use --pkg-manager pnpm.",
+      );
+    }
+
     spinner.message("Composing project layers");
     const resolvedLayers = layerResolver.resolveLayers(validatedInput);
     const targetDirectory = `${cwd}/${validatedInput.name}`;
@@ -222,9 +228,16 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
     await donationConfigWriter.write(targetDirectory);
 
     spinner.message("Initialising git repository");
-    await repoInitialiser.initialise(targetDirectory);
+    const { committed } = await repoInitialiser.initialise(targetDirectory);
 
     spinner.stop("Project scaffolded");
+
+    if (!committed) {
+      logger.warn(
+        "git has no author identity, so the project has no first commit. " +
+          "Set user.name and user.email, then commit the staged files.",
+      );
+    }
 
     if (isDockerAvailable()) {
       logger.success(
@@ -241,6 +254,7 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
           runtime: validatedInput.runtime,
           framework: validatedInput.framework,
           packageManager: validatedInput.packageManager ?? null,
+          committed,
         }),
       );
       return;

@@ -18,15 +18,29 @@ class GitRepoInitialiser implements RepoInitialiser {
     this.run = run;
   }
 
-  async initialise(projectDirectory: string): Promise<void> {
+  async initialise(projectDirectory: string): Promise<{ committed: boolean }> {
     try {
       await this.run("git", ["init"], projectDirectory);
+      const committable = await this.hasAuthorIdentity(projectDirectory);
       await this.run("git", ["add", "."], projectDirectory);
-      await this.run("git", ["commit", "-m", "chore: initial commit"], projectDirectory);
+      if (committable) {
+        await this.run("git", ["commit", "-m", "chore: initial commit"], projectDirectory);
+      }
+      return { committed: committable };
     } catch (error) {
-      if ((error as Error).message.includes("Author identity unknown")) return;
       throw new GitError((error as Error).message);
     }
+  }
+
+  private async hasAuthorIdentity(projectDirectory: string): Promise<boolean> {
+    for (const key of ["user.name", "user.email"]) {
+      try {
+        await this.run("git", ["config", key], projectDirectory);
+      } catch {
+        return false;
+      }
+    }
+    return true;
   }
 }
 

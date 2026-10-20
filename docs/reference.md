@@ -78,11 +78,13 @@ Success:
   "name": "my-app",
   "runtime": "node",
   "framework": "express",
-  "packageManager": "pnpm"
+  "packageManager": "pnpm",
+  "committed": true
 }
 ```
 
-`packageManager` is `null` when the project has no package manager.
+- `packageManager` is `null` when the project has no package manager.
+- `committed` is `false` when git has no author identity. The files are staged, but the project has no first commit.
 
 Error:
 

@@ -1,16 +1,9 @@
 // oxlint-disable typescript/require-await
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { execFileSync } from "node:child_process";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { UsageError } from "../../../../src/errors.js";
-
-vi.mock("node:child_process", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("node:child_process")>()),
-  execFileSync: vi.fn(),
-}));
-
 import {
   BunPackageManager,
   extractVersions,
@@ -67,18 +60,6 @@ describe(BunPackageManager, () => {
       const adapter = new BunPackageManager(runner);
 
       await expect(adapter.specifyDeps(tmpDir, "1.0.0")).rejects.toBeInstanceOf(UsageError);
-    });
-
-    it("fails with an actionable UsageError when Docker is not available", async () => {
-      vi.mocked(execFileSync).mockImplementation(() => {
-        throw new Error("docker: command not found");
-      });
-
-      await expect(new BunPackageManager().specifyDeps(tmpDir, "1.0.0")).rejects.toThrow(
-        new UsageError(
-          "bun needs Docker to pin dependencies. Start Docker, or use --pkg-manager pnpm.",
-        ),
-      );
     });
   });
 });

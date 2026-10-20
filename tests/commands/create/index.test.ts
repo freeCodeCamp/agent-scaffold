@@ -50,8 +50,8 @@ const createPromptPort = (selection: CreateSelections | null): Prompt => ({
 });
 
 class StubRepoInitialiser implements RepoInitialiser {
-  async initialise(_projectDirectory: string): Promise<void> {
-    // No-op
+  async initialise(_projectDirectory: string): Promise<{ committed: boolean }> {
+    return { committed: true };
   }
 }
 
@@ -250,7 +250,7 @@ describe("create", () => {
     });
 
     const repoInitialiser = {
-      initialise: vi.fn((_dir: string) => Promise.resolve()),
+      initialise: vi.fn((_dir: string) => Promise.resolve({ committed: true })),
     };
 
     const deps = makeDeps(rootDirectory, createPromptPort(selection), {
@@ -267,7 +267,7 @@ describe("create", () => {
     const selection = createStaticSelection(name);
 
     const repoInitialiser = {
-      initialise: vi.fn((_dir: string) => Promise.resolve()),
+      initialise: vi.fn((_dir: string) => Promise.resolve({ committed: true })),
     };
 
     const deps = makeDeps(rootDirectory, createPromptPort(selection), {
@@ -643,5 +643,47 @@ describe("create", () => {
     );
 
     vi.mocked(isDockerAvailable).mockReturnValue(true);
+  });
+
+  it("rejects bun without Docker before it writes any file", async () => {
+    const { isDockerAvailable } = await import("../../../src/commands/create/docker-check.js");
+    vi.mocked(isDockerAvailable).mockReturnValue(false);
+
+    const deps = makeDeps(
+      rootDirectory,
+      createPromptPort({ ...createPromptResult, packageManager: "bun" }),
+    );
+    await create({ json: false }, deps);
+
+    expect(deps.exit).toHaveBeenCalled();
+    expect(deps.logger.error).toHaveBeenCalledWith(
+      "bun needs Docker to pin dependencies. Start Docker, or use --pkg-manager pnpm.",
+    );
+    expect(existsSync(join(rootDirectory, createPromptResult.name))).toBe(false);
+
+    vi.mocked(isDockerAvailable).mockReturnValue(true);
+  });
+
+  it("warns and reports committed: false when git has no author identity", async () => {
+    const repoInitialiser = { initialise: vi.fn(() => Promise.resolve({ committed: false })) };
+    const deps = makeDeps(rootDirectory, createPromptPort(createPromptResult), { repoInitialiser });
+    const write = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+    await create(
+      {
+        json: true,
+        yes: true,
+        name: createPromptResult.name,
+        runtime: createPromptResult.runtime,
+        framework: createPromptResult.framework,
+        packageManager: "pnpm",
+      },
+      deps,
+    );
+
+    const envelope = JSON.parse(String(write.mock.calls.at(-1)?.[0]));
+    write.mockRestore();
+    expect(envelope).toMatchObject({ success: true, committed: false });
+    expect(deps.logger.warn).toHaveBeenCalledWith(expect.stringContaining("user.email"));
   });
 });
