@@ -35,16 +35,16 @@ In non-interactive mode, the CLI uses the recommended runtime, framework, and pa
   "timestamp": "2026-01-01T00:00:00.000Z",
   "runtimes": [
     {
-      "id": "node",
-      "label": "Node.js",
+      "id": "static_web",
+      "label": "Static (HTML/CSS/JS)",
       "recommended": true,
-      "frameworks": [{ "id": "express", "label": "Express", "recommended": true }],
+      "frameworks": [{ "id": "astro-lite", "label": "Minimal Astro template", "recommended": true }],
       "packageManagers": [{ "id": "pnpm", "label": "pnpm", "recommended": true }]
     }
   ],
   "defaults": {
-    "runtime": "node",
-    "framework": "express",
+    "runtime": "static_web",
+    "framework": "astro-lite",
     "packageManager": "pnpm"
   }
 }

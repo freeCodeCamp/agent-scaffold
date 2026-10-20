@@ -14,6 +14,7 @@ import type {
 import { getLabel } from "../layer-composition/labels.js";
 import type { LabelCategory } from "../layer-composition/labels.js";
 import { UsageError } from "../../../errors.js";
+import { PROJECT_NAME_PATTERN, PROJECT_NAME_RULE } from "../create-input-validation-service.js";
 
 interface ClackPromptApi {
   isCancel(value: unknown): value is symbol;
@@ -32,8 +33,6 @@ interface ClackPromptApi {
     validate?: (value: string | undefined) => string | Error | undefined;
   }): Promise<string | symbol>;
 }
-
-const PROJECT_NAME_PATTERN = /^[a-z][a-z0-9-]{2,49}$/;
 
 const defaultClackApi: ClackPromptApi = {
   isCancel,
@@ -82,7 +81,7 @@ class ClackPrompt implements Prompt {
           return undefined;
         }
 
-        return "Name must be lowercase kebab-case, start with a letter, and be 3–50 characters long.";
+        return `Name: ${PROJECT_NAME_RULE}.`;
       },
     });
 

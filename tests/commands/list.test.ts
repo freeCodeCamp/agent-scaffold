@@ -173,4 +173,14 @@ describe("list", () => {
       expect(exit).toHaveBeenCalledWith(EXIT_CONFIG);
     });
   });
+
+  it("keeps static_web, astro-lite and pnpm as the defaults of the shipped templates", async () => {
+    const repoTemplates = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "templates");
+    const { defaults } = buildListData(await loadFromDir(repoTemplates));
+    expect(defaults).toEqual({
+      runtime: "static_web",
+      framework: "astro-lite",
+      packageManager: "pnpm",
+    });
+  });
 });

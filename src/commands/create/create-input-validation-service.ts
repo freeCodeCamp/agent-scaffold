@@ -10,6 +10,8 @@ import type { CreateSelections } from "./prompt/prompt.port.js";
 type PathExists = (path: string) => boolean;
 
 const PROJECT_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const PROJECT_NAME_RULE =
+  "use lowercase letters and digits, with single hyphens between them (no leading, trailing, or double hyphen)";
 
 interface CreateInputValidator {
   validateCreateInput(input: CreateSelections): CreateSelections;
@@ -41,9 +43,7 @@ class CreateInputValidationService implements CreateInputValidator {
       return;
     }
 
-    throw new UsageError(
-      `invalid project name "${name}": use lowercase letters and digits, with single hyphens between them (no leading, trailing, or double hyphen)`,
-    );
+    throw new UsageError(`invalid project name "${name}": ${PROJECT_NAME_RULE}`);
   }
 
   private validateRuntimeAndCombinations(input: CreateSelections): void {
@@ -83,5 +83,5 @@ class CreateInputValidationService implements CreateInputValidator {
   }
 }
 
-export { CreateInputValidationService };
+export { CreateInputValidationService, PROJECT_NAME_PATTERN, PROJECT_NAME_RULE };
 export type { PathExists, CreateInputValidator };

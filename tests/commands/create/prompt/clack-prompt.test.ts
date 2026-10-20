@@ -155,7 +155,7 @@ describe(ClackPrompt, () => {
     await adapter.promptForCreateInputs();
 
     expect(validationMessage).toBe(
-      "Name must be lowercase kebab-case, start with a letter, and be 3–50 characters long.",
+      "Name: use lowercase letters and digits, with single hyphens between them (no leading, trailing, or double hyphen).",
     );
   });
 

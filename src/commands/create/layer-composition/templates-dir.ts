@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { execFile } from "node:child_process";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, readdir, rename, rm } from "node:fs/promises";
+import { mkdir, readFile, readdir, rename, rm, stat, utimes } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,20 +22,36 @@ const cacheBase = (): string => {
 };
 
 const CACHE_ENTRY = /^[0-9a-f]{16}$/;
+const STALE_AFTER_MS = 30 * 24 * 60 * 60 * 1000;
 
-// Best effort: remove cache entries of older template hashes. Temporary
-// directories of concurrent runs do not match CACHE_ENTRY, so they stay.
-const pruneStaleExtractions = async (templatesRoot: string, keep: string): Promise<void> => {
+// Best effort: remove cache entries of other template hashes that no run has
+// used for STALE_AFTER_MS. Another installed version can still use a recent
+// entry. Temporary directories do not match CACHE_ENTRY, so they stay.
+const pruneStaleExtractions = async (
+  templatesRoot: string,
+  keep: string,
+  now: number = Date.now(),
+): Promise<void> => {
   try {
-    const entries = await readdir(templatesRoot);
+    const entries = (await readdir(templatesRoot)).filter(
+      (entry) => entry !== keep && CACHE_ENTRY.test(entry),
+    );
     await Promise.all(
-      entries
-        .filter((entry) => entry !== keep && CACHE_ENTRY.test(entry))
-        .map((entry) => rm(join(templatesRoot, entry), { force: true, recursive: true })),
+      entries.map(async (entry) => {
+        const path = join(templatesRoot, entry);
+        if (now - (await stat(path)).mtimeMs > STALE_AFTER_MS) {
+          await rm(path, { force: true, recursive: true });
+        }
+      }),
     );
   } catch {
     // Ignore: a stale cache entry is harmless.
   }
+};
+
+const markUsed = async (path: string): Promise<void> => {
+  const now = new Date();
+  await utimes(path, now, now).catch(() => undefined);
 };
 
 // npm drops .gitignore files and symlinks from a published package, so the
@@ -46,7 +62,10 @@ const extractTarball = async (tarball: string, base: string): Promise<string> =>
     .digest("hex")
     .slice(0, 16);
   const target = join(base, "templates", hash);
-  if (existsSync(join(target, "labels.json"))) return target;
+  if (existsSync(join(target, "labels.json"))) {
+    await markUsed(target);
+    return target;
+  }
 
   const tmp = `${target}.tmp-${process.pid}`;
   await mkdir(tmp, { recursive: true });

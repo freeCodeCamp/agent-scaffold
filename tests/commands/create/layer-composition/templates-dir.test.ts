@@ -1,5 +1,13 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  utimesSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -44,12 +52,16 @@ describe(bundledTemplatesDir, () => {
     await expect(bundledTemplatesDir(start, base)).resolves.toBe(first);
   });
 
-  it("removes cache entries of older template hashes after extraction", async () => {
+  it("removes unused cache entries of other template hashes after extraction", async () => {
     const start = makeTempDir();
     const base = makeTempDir();
     const source = makeTempDir();
     const stale = join(base, "templates", "0123456789abcdef");
+    const recent = join(base, "templates", "fedcba9876543210");
     mkdirSync(stale, { recursive: true });
+    mkdirSync(recent, { recursive: true });
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    utimesSync(stale, sixtyDaysAgo, sixtyDaysAgo);
     writeFileSync(join(source, "labels.json"), "{}\n");
     execFileSync("tar", ["czf", join(start, "templates.tgz"), "-C", source, "."]);
 
@@ -57,6 +69,7 @@ describe(bundledTemplatesDir, () => {
 
     expect(existsSync(extracted)).toBe(true);
     expect(existsSync(stale)).toBe(false);
+    expect(existsSync(recent)).toBe(true);
   });
 
   it("throws a ConfigError when templates.tgz cannot be extracted", async () => {
