@@ -1,6 +1,6 @@
 {
   "static_web": {
-    "baseImage": "node:24-alpine",
+    "baseImage": "node:26-alpine",
     "frameworks": [
       "astro-lite",
       "html-css-js",
@@ -15,7 +15,7 @@
     "recommended": true
   },
   "node": {
-    "baseImage": "node:24-alpine",
+    "baseImage": "node:26-alpine",
     "frameworks": [
       "express",
       "typescript"

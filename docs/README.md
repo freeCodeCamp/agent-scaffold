@@ -30,7 +30,7 @@ dist/             # build output (index.cjs, templates.tgz)
 
 ## Develop
 
-Node.js 24 or later is required.
+Node.js 26 or later is required.
 
 | Command          | Purpose                                      |
 | ---------------- | -------------------------------------------- |

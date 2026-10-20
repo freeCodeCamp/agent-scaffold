@@ -25,7 +25,7 @@
       "package.json",
       "pnpm-workspace.yaml"
     ],
-    "pmInstall": "RUN corepack use pnpm@{{pmVersion}} && corepack enable pnpm && pnpm config set store-dir /home/node/.local/share/pnpm",
+    "pmInstall": "RUN npm install -g pnpm@{{pmVersion}} && pnpm config set store-dir /home/node/.local/share/pnpm",
     "pmVersion": "10.34.1",
     "preinstall": "npx only-allow pnpm",
     "recommended": true

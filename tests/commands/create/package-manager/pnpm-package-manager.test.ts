@@ -163,7 +163,7 @@ describe(dockerRunnerFactory, () => {
 
     expect(mockRunCmdForFiles).toHaveBeenCalledWith(
       "/project",
-      ["sh", "-c", "corepack use pnpm@10.0.0 && pnpm install --lockfile-only"],
+      ["sh", "-c", "npm pkg set packageManager=pnpm@10.0.0 && pnpm install --lockfile-only"],
       ["package.json", "pnpm-workspace.yaml"],
       ["pnpm-lock.yaml", "package.json"],
     );

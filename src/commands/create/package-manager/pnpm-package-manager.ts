@@ -37,7 +37,7 @@ const dockerRunnerFactory: PnpmRunnerFactory = (pmVersion) => ({
   async installLockfileOnly(cwd) {
     await runCmdForFiles(
       cwd,
-      ["sh", "-c", `corepack use pnpm@${pmVersion} && pnpm install --lockfile-only`],
+      ["sh", "-c", `npm pkg set packageManager=pnpm@${pmVersion} && pnpm install --lockfile-only`],
       MANIFESTS,
       [LOCKFILE, "package.json"],
     );
