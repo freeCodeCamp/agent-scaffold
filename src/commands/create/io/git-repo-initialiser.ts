@@ -33,9 +33,9 @@ class GitRepoInitialiser implements RepoInitialiser {
   }
 
   private async hasAuthorIdentity(projectDirectory: string): Promise<boolean> {
-    for (const key of ["user.name", "user.email"]) {
+    for (const ident of ["GIT_AUTHOR_IDENT", "GIT_COMMITTER_IDENT"]) {
       try {
-        await this.run("git", ["config", key], projectDirectory);
+        await this.run("git", ["var", ident], projectDirectory);
       } catch {
         return false;
       }

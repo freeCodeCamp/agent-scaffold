@@ -15,8 +15,8 @@ describe(GitRepoInitialiser, () => {
 
     expect(calls).toStrictEqual([
       ["git", ["init"]],
-      ["git", ["config", "user.name"]],
-      ["git", ["config", "user.email"]],
+      ["git", ["var", "GIT_AUTHOR_IDENT"]],
+      ["git", ["var", "GIT_COMMITTER_IDENT"]],
       ["git", ["add", "."]],
       ["git", ["commit", "-m", "chore: initial commit"]],
     ]);
@@ -33,13 +33,18 @@ describe(GitRepoInitialiser, () => {
     const calls: string[] = [];
     const run = vi.fn((_command: string, args: string[]) => {
       calls.push(args.join(" "));
-      return args.join(" ") === "config user.email"
+      return args.join(" ") === "var GIT_COMMITTER_IDENT"
         ? Promise.reject(new Error("exit code 1"))
         : Promise.resolve();
     });
     const adapter = new GitRepoInitialiser(run);
 
     await expect(adapter.initialise("/some/project")).resolves.toStrictEqual({ committed: false });
-    expect(calls).toStrictEqual(["init", "config user.name", "config user.email", "add ."]);
+    expect(calls).toStrictEqual([
+      "init",
+      "var GIT_AUTHOR_IDENT",
+      "var GIT_COMMITTER_IDENT",
+      "add .",
+    ]);
   });
 });
