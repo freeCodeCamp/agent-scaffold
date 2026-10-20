@@ -6,7 +6,6 @@ import { createPackageSpecifier } from "./package-json-specifier.js";
 import type { PackageSpecifier } from "./package-specifier.port.js";
 import { isDockerAvailable } from "../docker-check.js";
 import { runCmdForFiles, runCmdForStdout } from "./docker-runner.js";
-import { UsageError } from "../../../errors.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -52,54 +51,36 @@ const dockerRunnerFactory: PnpmRunnerFactory = (pmVersion) => ({
   },
 });
 
-const setPackageManagerHint = async (cwd: string): Promise<void> => {
+const setPackageManager = async (cwd: string, pmVersion: string): Promise<void> => {
   const path = join(cwd, "package.json");
   const pkg = JSON.parse(await readFile(path, "utf8")) as Record<string, unknown>;
   if (!pkg["packageManager"]) {
-    pkg["packageManager"] = "pnpm";
+    pkg["packageManager"] = `pnpm@${pmVersion}`;
     await writeFile(path, JSON.stringify(pkg, null, 2), "utf8");
+  }
+};
+
+const runPinnedPnpm = async (pmVersion: string, args: string[], cwd: string): Promise<string> => {
+  try {
+    const { stdout } = await execFileAsync("npx", ["--yes", `pnpm@${pmVersion}`, ...args], {
+      cwd,
+      encoding: "utf8",
+    });
+    return stdout;
+  } catch (err) {
+    const error = err as Error & { stdout: string; stderr: string };
+    error.message = `${error.message}\nstdout: ${error.stdout}\nstderr: ${error.stderr}`;
+    throw error;
   }
 };
 
 const hostRunnerFactory: PnpmRunnerFactory = (pmVersion) => ({
   async installLockfileOnly(cwd) {
-    await setPackageManagerHint(cwd);
-    try {
-      await execFileAsync(
-        "sh",
-        ["-c", `corepack use pnpm@${pmVersion} && pnpm install --lockfile-only`],
-        { cwd, encoding: "utf8" },
-      );
-    } catch (err) {
-      const error = err as Error & { stdout: string; stderr: string };
-      error.message = `${error.message}\nstdout: ${error.stdout}\nstderr: ${error.stderr}`;
-      throw error;
-    }
+    await setPackageManager(cwd, pmVersion);
+    await runPinnedPnpm(pmVersion, ["install", "--lockfile-only"], cwd);
   },
-  async list(cwd) {
-    try {
-      const { stdout } = await execFileAsync(
-        "pnpm",
-        ["list", "--json", "--depth=0", "--lockfile-only"],
-        { cwd, encoding: "utf8" },
-      );
-      return stdout;
-    } catch (err) {
-      if (
-        err instanceof Error &&
-        err.message.includes("Unknown option") &&
-        err.message.includes("lockfile-only")
-      ) {
-        const { stdout } = await execFileAsync("pnpm", ["-v"]);
-
-        throw new UsageError(
-          `pnpm version ${stdout.trim()} does not support \`ls --lockfile-only\`, please use pnpm >= 10.23.0`,
-        );
-      }
-      const error = err as Error & { stdout: string; stderr: string };
-      error.message = `${error.message}\nstdout: ${error.stdout}\nstderr: ${error.stderr}`;
-      throw error;
-    }
+  list(cwd) {
+    return runPinnedPnpm(pmVersion, ["list", "--json", "--depth=0", "--lockfile-only"], cwd);
   },
 });
 

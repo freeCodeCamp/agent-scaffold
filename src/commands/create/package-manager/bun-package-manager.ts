@@ -1,6 +1,8 @@
 import { createPackageSpecifier } from "./package-json-specifier.js";
 import type { PackageSpecifier } from "./package-specifier.port.js";
 import { runCmdForFiles, runCmdForStdout } from "./docker-runner.js";
+import { isDockerAvailable } from "../docker-check.js";
+import { UsageError } from "../../../errors.js";
 
 /**
  * These values are intrinsic to bun. If they change, also update
@@ -14,8 +16,17 @@ interface BunRunner {
   list(cwd: string): Promise<string>;
 }
 
+const requireDocker = (): void => {
+  if (!isDockerAvailable()) {
+    throw new UsageError(
+      "bun needs Docker to pin dependencies. Start Docker, or use --pkg-manager pnpm.",
+    );
+  }
+};
+
 const bunRunner: BunRunner = {
   async installLockfileOnly(cwd) {
+    requireDocker();
     await runCmdForFiles(cwd, ["bun", "install", "--lockfile-only"], MANIFESTS, [LOCKFILE]);
   },
   list(cwd) {

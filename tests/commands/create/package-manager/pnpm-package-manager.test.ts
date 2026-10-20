@@ -120,43 +120,33 @@ describe(hostRunnerFactory, () => {
     await rm(hostTmpDir, { force: true, recursive: true });
   });
 
-  it("writes packageManager hint to package.json before running corepack", async () => {
+  it("writes the pinned packageManager to package.json before the install", async () => {
     const runner = hostRunnerFactory("10.0.0");
     await runner.installLockfileOnly(hostTmpDir);
 
     const pkg = JSON.parse(await readFile(join(hostTmpDir, "package.json"), "utf8"));
-    expect(pkg.packageManager).toBe("pnpm");
+    expect(pkg.packageManager).toBe("pnpm@10.0.0");
   });
 
-  it("throws an informative error when pnpm does not support --lockfile-only for list", async () => {
-    vi.mocked(execFile).mockImplementation(((...rawArgs: unknown[]) => {
-      const callback = rawArgs[rawArgs.length - 1] as MockCallback;
-      const cmd = rawArgs[0] as string;
-      const args = rawArgs[1] as string[];
-      if (args.includes("list")) {
-        callback(new Error("Unknown option: 'lockfile-only'"));
-        return;
-      }
-      if (cmd === "pnpm" && args.includes("-v")) {
-        callback(null, { stderr: "", stdout: "10.0.0\n" });
-        return;
-      }
-      callback(null, { stderr: "", stdout: "" });
-    }) as never);
-
-    const runner = hostRunnerFactory("10.0.0");
-    await expect(runner.list(hostTmpDir)).rejects.toThrow(
-      "pnpm version 10.0.0 does not support `ls --lockfile-only`, please use pnpm >= 10.23.0",
-    );
-  });
-
-  it("installLockfileOnly runs corepack + pnpm install in the project directory", async () => {
+  it("installLockfileOnly runs the pinned pnpm through npx, without corepack", async () => {
     const runner = hostRunnerFactory("10.0.0");
     await runner.installLockfileOnly(hostTmpDir);
 
     expect(execFile).toHaveBeenCalledWith(
-      "sh",
-      ["-c", "corepack use pnpm@10.0.0 && pnpm install --lockfile-only"],
+      "npx",
+      ["--yes", "pnpm@10.0.0", "install", "--lockfile-only"],
+      expect.objectContaining({ cwd: hostTmpDir }),
+      expect.any(Function),
+    );
+  });
+
+  it("list runs the pinned pnpm through npx", async () => {
+    const runner = hostRunnerFactory("10.0.0");
+    await runner.list(hostTmpDir);
+
+    expect(execFile).toHaveBeenCalledWith(
+      "npx",
+      ["--yes", "pnpm@10.0.0", "list", "--json", "--depth=0", "--lockfile-only"],
       expect.objectContaining({ cwd: hostTmpDir }),
       expect.any(Function),
     );

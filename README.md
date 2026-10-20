@@ -13,7 +13,7 @@ npm i -g @freecodecamp/agent-scaffold
 agent-scaffold create
 ```
 
-Node.js 24 or later is required.
+Node.js 24 or later is required. Docker is recommended. Without Docker, pnpm projects work through `npx`, and bun projects are not available.
 
 ## Use
 
