@@ -24,6 +24,7 @@ class GitRepoInitialiser implements RepoInitialiser {
       await this.run("git", ["add", "."], projectDirectory);
       await this.run("git", ["commit", "-m", "chore: initial commit"], projectDirectory);
     } catch (error) {
+      if ((error as Error).message.includes("Author identity unknown")) return;
       throw new GitError((error as Error).message);
     }
   }

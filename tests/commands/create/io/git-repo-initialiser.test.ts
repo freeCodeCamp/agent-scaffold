@@ -26,4 +26,18 @@ describe(GitRepoInitialiser, () => {
 
     await expect(adapter.initialise("/some/project")).rejects.toBeInstanceOf(GitError);
   });
+
+  it("keeps the repo with staged files when git has no author identity", async () => {
+    const calls: string[] = [];
+    const run = vi.fn((_command: string, args: string[]) => {
+      calls.push(args[0] ?? "");
+      return args[0] === "commit"
+        ? Promise.reject(new Error("Command failed: git commit\nAuthor identity unknown"))
+        : Promise.resolve();
+    });
+    const adapter = new GitRepoInitialiser(run);
+
+    await expect(adapter.initialise("/some/project")).resolves.toBeUndefined();
+    expect(calls).toStrictEqual(["init", "add", "commit"]);
+  });
 });
