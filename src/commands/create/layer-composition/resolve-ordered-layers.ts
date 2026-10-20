@@ -2,7 +2,7 @@ import { UsageError } from "../../../errors.js";
 import type { CreateSelections } from "../prompt/prompt.port.js";
 import type { Framework, PackageManager, PackageManagerOption, Runtime } from "./schemas/layers.js";
 
-type LayerType = "always" | "frameworks" | "package-managers" | "runtime" | "services";
+type LayerType = "always" | "frameworks" | "package-managers" | "runtime";
 
 interface LayerData {
   files: Record<string, string>;
@@ -18,7 +18,6 @@ interface LayerRegistry {
   frameworks: Record<string, FrameworkLayerData>;
   "package-managers": Record<string, PackageManagerLayerData>;
   runtime: Record<string, RuntimeEntryData & LayerData>;
-  services: Record<string, LayerData>;
 }
 
 interface ResolvedLayer {
@@ -39,10 +38,6 @@ const resolveOrderedLayers = (input: CreateSelections, layers: LayerRegistry): R
       ? []
       : [{ id: input.packageManager, layerType: "package-managers" as const }]),
     { id: input.framework, layerType: "frameworks" },
-    ...[...input.databases, ...input.platformServices].map((id) => ({
-      id,
-      layerType: "services" as const,
-    })),
   ];
 
   return refs.map(({ id, layerType }) => {

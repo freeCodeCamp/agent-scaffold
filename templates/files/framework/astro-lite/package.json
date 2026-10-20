@@ -1,0 +1,44 @@
+{
+  "name": "{{name}}",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": "24"
+  },
+  "scripts": {
+    "astro": "astro",
+    "build": "astro build",
+    "dev": "astro dev --host --ignore-lock",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "preview": "astro preview",
+    "test": "vitest",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/react": "^6",
+    "astro": "^7",
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9",
+    "@eslint/js": "^10",
+    "@testing-library/jest-dom": "^7",
+    "@testing-library/react": "^16",
+    "@testing-library/user-event": "^14",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^10",
+    "eslint-config-prettier": "^10",
+    "eslint-plugin-astro": "^1",
+    "eslint-plugin-jsx-a11y": "^6",
+    "jsdom": "^30",
+    "prettier": "^3",
+    "prettier-plugin-astro": "^0.14",
+    "typescript": "^6",
+    "typescript-eslint": "^8",
+    "vitest": "^4"
+  }
+}

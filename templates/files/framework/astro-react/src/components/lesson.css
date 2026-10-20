@@ -1,0 +1,30 @@
+.lesson-layout {
+  display: flex;
+}
+
+.lesson-layout .main {
+  flex: 1;
+  min-width: 0;
+  min-height: calc(100vh - var(--header-height));
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: var(--secondary-background);
+}
+
+.lesson-content {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+}
+
+.lesson-next {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .main.sidebar-open {
+    visibility: hidden;
+  }
+}

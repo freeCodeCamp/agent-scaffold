@@ -10,10 +10,6 @@ import {
 } from "./package-manager/package-manager.service.js";
 import { BunPackageManager } from "./package-manager/bun-package-manager.js";
 import { PnpmPackageManager } from "./package-manager/pnpm-package-manager.js";
-import {
-  PlatformManifestService,
-  type PlatformManifestGenerator,
-} from "./platform-manifest-service.js";
 import type { CreateSelections, Prompt } from "./prompt/prompt.port.js";
 import { ClackPrompt } from "./prompt/clack-prompt.js";
 import type { DonationConfigWriter } from "./io/donation-config-writer.port.js";
@@ -31,11 +27,7 @@ import {
   recommendedPackageManagerOptions,
   recommendedRuntimeOptions,
 } from "./layer-composition/allowed-configuration.js";
-import type {
-  DatabaseOption,
-  PackageManagerOption,
-  ServiceOption,
-} from "./layer-composition/schemas/layers.js";
+import type { PackageManagerOption } from "./layer-composition/schemas/layers.js";
 import { getLabel } from "./layer-composition/labels.js";
 import { clackLogger, silentLogger, type Logger } from "../../output/logger.js";
 import { clackSpinner, silentSpinner, type Spinner } from "../../output/spinner.js";
@@ -46,10 +38,7 @@ import { emitJson, outputError } from "../../output/format.js";
 import { LocalProjectWriter } from "./io/local-project-writer.js";
 import { loadFromDir, type TemplateData } from "./layer-composition/template-provider.js";
 import { bsd3ClauseLicense } from "./layer-composition/licenses/bsd-3-clause.js";
-import { templateVersionRange } from "./layer-composition/assets.js";
-import { ensureTemplateDir } from "./layer-composition/template-fetcher.js";
-import { resolveTemplateVersions, formatTemplateNotice } from "../../lib/template-version-check.js";
-import { isDisabled } from "../../lib/version-utils.js";
+import { bundledTemplatesDir } from "./layer-composition/templates-dir.js";
 import { isDockerAvailable } from "./docker-check.js";
 
 export interface HandlerResult {
@@ -61,13 +50,10 @@ const defaultFilesystemWriter: ProjectWriter = new LocalProjectWriter();
 
 export interface CreateOptions {
   json: boolean;
-  forceFetch?: boolean;
   yes?: boolean;
   name?: string;
   runtime?: string;
   framework?: string;
-  databases?: string[];
-  services?: string[];
   packageManager?: string;
 }
 
@@ -80,7 +66,6 @@ export interface CreateDeps {
   layerResolver?: LayerComposer;
   logger?: Logger;
   packageManager?: PackageManager;
-  platformManifestGenerator?: PlatformManifestGenerator;
   prompt?: Prompt;
   repoInitialiser?: RepoInitialiser;
   skillInstaller?: SkillInstaller;
@@ -100,51 +85,15 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
       pnpm: new PnpmPackageManager(),
       bun: new BunPackageManager(),
     });
-  const platformManifestGenerator = deps.platformManifestGenerator ?? new PlatformManifestService();
   const donationConfigWriter = deps.donationConfigWriter ?? new LocalDonationConfigWriter();
   const repoInitialiser = deps.repoInitialiser ?? new GitRepoInitialiser();
   const skillInstaller = deps.skillInstaller ?? new NpxSkillInstaller();
   const isTTY = process.stdin.isTTY;
   const spinner = deps.spinner ?? (options.json || !isTTY ? silentSpinner() : clackSpinner());
 
-  async function findTemplateVersion(range: string) {
-    const { latest, latestCompatible } = await resolveTemplateVersions(range);
-
-    if (!isDisabled() && latestCompatible !== latest) {
-      process.stderr.write(
-        formatTemplateNotice({
-          current: latestCompatible,
-          latest,
-        }),
-      );
-    }
-
-    return latestCompatible;
-  }
-
-  async function findTemplateConfig(envVersion?: string, envDir?: string) {
-    // if envDir is specified, we don't need the version (since the version is used to get the data and we have the data)
-    if (envDir && envDir.length > 0)
-      return {
-        templateDir: envDir,
-        templateVersion: null,
-      };
-
-    const version =
-      envVersion && envVersion.length > 0
-        ? envVersion
-        : await findTemplateVersion(templateVersionRange);
-    return {
-      templateDir: await ensureTemplateDir(version, { forceFetch: options.forceFetch }),
-      templateVersion: version,
-    };
-  }
-
   try {
-    const envDir = process.env["UNIVERSE_TEMPLATES_DIR"];
-    const envVersion = process.env["UNIVERSE_TEMPLATES_VERSION"];
-
-    const { templateDir, templateVersion } = await findTemplateConfig(envVersion, envDir);
+    const envDir = process.env["AGENT_SCAFFOLD_TEMPLATES_DIR"];
+    const templateDir = envDir && envDir.length > 0 ? envDir : await bundledTemplatesDir();
 
     const loadLayersFn = deps.loadLayersFn ?? loadFromDir;
     const { labels, registry } = await loadLayersFn(templateDir);
@@ -186,22 +135,6 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
         summaryLines.push(
           `- Package manager: ${getLabel(labels, "packageManager", promptResult.packageManager)}`,
         );
-      }
-
-      if (promptResult.databases.length > 0) {
-        summaryLines.push(
-          `- Databases: ${promptResult.databases.map((d) => getLabel(labels, "database", d)).join(", ")}`,
-        );
-      }
-
-      if (promptResult.platformServices.length > 0) {
-        summaryLines.push(
-          `- Platform services: ${promptResult.platformServices.map((s) => getLabel(labels, "service", s)).join(", ")}`,
-        );
-      }
-
-      if (templateVersion) {
-        summaryLines.push(`- Templates version: ${templateVersion}`);
       }
 
       logger.info(summaryLines.join("\n"));
@@ -253,8 +186,6 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
         name: options.name,
         runtime,
         framework,
-        databases: (options.databases ?? []) as DatabaseOption[],
-        platformServices: (options.services ?? []) as ServiceOption[],
         ...(pm !== undefined ? { packageManager: pm } : {}),
       };
     }
@@ -274,11 +205,6 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
       spinner.message("Creating symlinks");
       await filesystemWriter.createSymlinks(targetDirectory, resolvedLayers.symlinks);
     }
-
-    spinner.message("Writing platform manifest");
-    await filesystemWriter.writeProject(targetDirectory, {
-      "platform.yaml": platformManifestGenerator.generatePlatformManifest(validatedInput),
-    });
 
     spinner.message("Adding LICENSE");
     await filesystemWriter.writeProject(targetDirectory, {
@@ -331,10 +257,7 @@ export const create = async (options: CreateOptions, deps: CreateDeps = {}): Pro
           name: validatedInput.name,
           runtime: validatedInput.runtime,
           framework: validatedInput.framework,
-          databases: validatedInput.databases,
-          platformServices: validatedInput.platformServices,
           packageManager: validatedInput.packageManager ?? null,
-          templateVersion,
         }),
       );
       return;

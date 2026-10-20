@@ -1,0 +1,218 @@
+{
+  "astro-lite": {
+    "devContainer": {
+      "customizations": {
+        "vscode": {
+          "extensions": [
+            "astro-build.astro-vscode",
+            "Anthropic.claude-code"
+          ]
+        }
+      }
+    },
+    "devCopySource": "COPY . .",
+    "port": 4321,
+    "recommended": true,
+    "skills": [
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "command-line-chic"
+      },
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "astro"
+      },
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "web-accessibility"
+      }
+    ],
+    "watchSync": [
+      {
+        "path": "./src",
+        "target": "/app/src"
+      }
+    ]
+  },
+  "astro-react": {
+    "devContainer": {
+      "customizations": {
+        "vscode": {
+          "extensions": [
+            "astro-build.astro-vscode",
+            "Anthropic.claude-code"
+          ]
+        }
+      }
+    },
+    "devCopySource": "COPY . .",
+    "port": 4321,
+    "recommended": true,
+    "skills": [
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "command-line-chic"
+      },
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "astro"
+      },
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "web-accessibility"
+      }
+    ],
+    "watchSync": [
+      {
+        "path": "./src",
+        "target": "/app/src"
+      }
+    ]
+  },
+  "express": {
+    "devContainer": {
+      "customizations": {
+        "vscode": {
+          "extensions": [
+            "Anthropic.claude-code"
+          ]
+        }
+      }
+    },
+    "devCopySource": "COPY src/ ./src/\nCOPY tsconfig.json ./",
+    "port": 3000,
+    "recommended": false,
+    "skills": [
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "command-line-chic"
+      }
+    ],
+    "watchSync": [
+      {
+        "path": "./src",
+        "target": "/app/src"
+      }
+    ]
+  },
+  "html-css-js": {
+    "devContainer": {
+      "customizations": {
+        "vscode": {
+          "extensions": [
+            "Anthropic.claude-code"
+          ]
+        }
+      }
+    },
+    "devCopySource": "COPY public public",
+    "port": 3000,
+    "recommended": false,
+    "skills": [
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "command-line-chic"
+      },
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "web-accessibility"
+      }
+    ],
+    "watchSync": [
+      {
+        "path": "./public",
+        "target": "/app/public"
+      }
+    ]
+  },
+  "react-vite": {
+    "devContainer": {
+      "customizations": {
+        "vscode": {
+          "extensions": [
+            "Anthropic.claude-code"
+          ]
+        }
+      }
+    },
+    "devCopySource": "COPY src src\nCOPY index.html .\nCOPY vite.config.ts .\nCOPY tsconfig*.json .",
+    "port": 5173,
+    "recommended": false,
+    "skills": [
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "command-line-chic"
+      },
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "web-accessibility"
+      }
+    ],
+    "watchSync": [
+      {
+        "path": "./src",
+        "target": "/app/src"
+      }
+    ]
+  },
+  "tanstack-shadcn": {
+    "devContainer": {
+      "customizations": {
+        "vscode": {
+          "extensions": [
+            "Anthropic.claude-code"
+          ]
+        }
+      }
+    },
+    "devCopySource": "COPY client ./client/\nCOPY index.html .\nCOPY vite.config.ts .\nCOPY tsconfig*.json .\nCOPY components.json .",
+    "port": 5173,
+    "recommended": false,
+    "skills": [
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "command-line-chic"
+      },
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "web-accessibility"
+      }
+    ],
+    "watchSync": [
+      {
+        "path": "client",
+        "target": "/app/client"
+      },
+      {
+        "path": "public",
+        "target": "/app/public"
+      }
+    ]
+  },
+  "typescript": {
+    "devContainer": {
+      "customizations": {
+        "vscode": {
+          "extensions": [
+            "Anthropic.claude-code"
+          ]
+        }
+      }
+    },
+    "devCopySource": "COPY src/ ./src/\nCOPY tsconfig.json ./",
+    "port": 3000,
+    "recommended": false,
+    "skills": [
+      {
+        "repo": "freeCodeCamp-Universe/marketplace",
+        "skill": "command-line-chic"
+      }
+    ],
+    "watchSync": [
+      {
+        "path": "./src",
+        "target": "/app/src"
+      }
+    ]
+  }
+}

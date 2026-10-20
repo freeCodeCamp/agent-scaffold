@@ -3,11 +3,11 @@ import { formatFatal, installFatalHandlers } from "../../src/lib/fatal.js";
 
 describe("formatFatal", () => {
   it("prefixes and stringifies an Error message", () => {
-    expect(formatFatal(new Error("boom"))).toBe("universe: boom");
+    expect(formatFatal(new Error("boom"))).toBe("agent-scaffold: boom");
   });
 
   it("stringifies a non-Error value", () => {
-    expect(formatFatal("nope")).toBe("universe: nope");
+    expect(formatFatal("nope")).toBe("agent-scaffold: nope");
   });
 
   it("redacts a bearer token in the message", () => {

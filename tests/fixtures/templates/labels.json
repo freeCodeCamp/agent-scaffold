@@ -10,15 +10,6 @@
     "tanstack-shadcn": "TanStack + shadcn/ui",
     "typescript": "TypeScript"
   },
-  "database": {
-    "postgresql": "PostgreSQL",
-    "redis": "Redis"
-  },
-  "service": {
-    "analytics": "Analytics",
-    "auth": "Auth",
-    "email": "Email"
-  },
   "packageManager": {
     "bun": "bun",
     "pnpm": "pnpm"

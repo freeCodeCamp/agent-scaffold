@@ -3,7 +3,7 @@ import { redact } from "../output/redact.js";
 
 export function formatFatal(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
-  return `universe: ${redact(message)}`;
+  return `agent-scaffold: ${redact(message)}`;
 }
 
 function defaultOnFatal(err: unknown): never {

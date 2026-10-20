@@ -24,30 +24,11 @@ import type { ResolvedLayerSet } from "../../../src/commands/create/layer-compos
 import { UsageError } from "../../../src/errors.js";
 import { loadFromDir } from "../../../src/commands/create/layer-composition/template-provider.js";
 import { RuntimeSchema } from "../../../src/commands/create/layer-composition/schemas/layers.js";
-import { resolveTemplateVersions } from "../../../src/lib/template-version-check.js";
-import { ensureTemplateDir } from "../../../src/commands/create/layer-composition/template-fetcher.js";
 import runtimeFixture from "../../fixtures/templates/layers/runtime.json";
 
 vi.mock("../../../src/commands/create/docker-check.js", () => ({
   isDockerAvailable: vi.fn(() => true),
 }));
-
-vi.mock("../../../src/lib/template-version-check.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../../../src/lib/template-version-check.js")>();
-  return { ...actual, resolveTemplateVersions: vi.fn() };
-});
-
-vi.mock(
-  "../../../src/commands/create/layer-composition/template-fetcher.js",
-  async (importOriginal) => {
-    const actual =
-      await importOriginal<
-        typeof import("../../../src/commands/create/layer-composition/template-fetcher.js")
-      >();
-    return { ...actual, ensureTemplateDir: vi.fn() };
-  },
-);
 
 const FIXTURES_DIR = resolve("tests/fixtures/templates");
 const runtimeData = RuntimeSchema.parse(runtimeFixture);
@@ -79,42 +60,34 @@ class StubRepoInitialiser implements RepoInitialiser {
 const resolvedLayerFiles = {
   ".gitignore": "node_modules\n",
   Procfile: "web: node dist/index.js\n",
-  "README.md": "# hello-universe\n",
+  "README.md": "# hello-scaffold\n",
   "compose.yaml": "services:{}\n",
-  "package.json": '{"name":"hello-universe"}',
-  "src/index.ts": "console.log('hello universe');\n",
+  "package.json": '{"name":"hello-scaffold"}',
+  "src/index.ts": "console.log('hello scaffold');\n",
   "tsconfig.json": '{"compilerOptions":{}}',
 };
 
 const createPromptResult: CreateSelections = {
-  databases: ["postgresql"],
   framework: "express",
-  name: "hello-universe",
+  name: "hello-scaffold",
   packageManager: "pnpm",
-  platformServices: ["auth", "email"],
   runtime: "node",
 };
 
 const createNodeSelection = (selection: {
-  databases: CreateSelections["databases"];
   framework: "express" | "typescript";
   name: string;
-  platformServices: CreateSelections["platformServices"];
 }): CreateSelections => ({
-  databases: selection.databases,
   framework: selection.framework,
   name: selection.name,
   packageManager: "pnpm",
-  platformServices: selection.platformServices,
   runtime: "node",
 });
 
 const createStaticSelection = (name: string): CreateSelections => ({
-  databases: [],
   framework: "html-css-js",
   name,
   packageManager: "pnpm",
-  platformServices: [],
   runtime: "static_web",
 });
 
@@ -177,8 +150,8 @@ describe("create", () => {
   let rootDirectory: string;
 
   beforeEach(() => {
-    vi.stubEnv("UNIVERSE_TEMPLATES_DIR", FIXTURES_DIR);
-    rootDirectory = mkdtempSync(join(tmpdir(), "universe-create-"));
+    vi.stubEnv("AGENT_SCAFFOLD_TEMPLATES_DIR", FIXTURES_DIR);
+    rootDirectory = mkdtempSync(join(tmpdir(), "agent-scaffold-create-"));
   });
 
   afterEach(() => {
@@ -186,12 +159,10 @@ describe("create", () => {
     rmSync(rootDirectory, { force: true, recursive: true });
   });
 
-  it("scaffolds Node.js + typescript + no services", async () => {
+  it("scaffolds Node.js + typescript", async () => {
     const selection = createNodeSelection({
-      databases: [],
       framework: "typescript",
       name: "node-bare",
-      platformServices: [],
     });
 
     const deps = makeDeps(rootDirectory, createPromptPort(selection));
@@ -203,10 +174,8 @@ describe("create", () => {
 
   it("creates symlinks from template fixtures in the output directory", async () => {
     const selection = createNodeSelection({
-      databases: [],
       framework: "express",
       name: "symlink-test",
-      platformServices: [],
     });
 
     const deps = makeDeps(rootDirectory, createPromptPort(selection));
@@ -222,10 +191,8 @@ describe("create", () => {
 
   it("snapshots generated Node.js scaffold output", async () => {
     const selection = createNodeSelection({
-      databases: ["postgresql", "redis"],
       framework: "express",
       name: "snapshot-node-app",
-      platformServices: ["analytics", "auth", "email"],
     });
 
     const deps = makeDeps(rootDirectory, createPromptPort(selection));
@@ -241,10 +208,8 @@ describe("create", () => {
   it("calls packageManager.specifyDeps with the target directory for Node.js scaffold", async () => {
     const name = "node-install-spy";
     const selection = createNodeSelection({
-      databases: [],
       framework: "typescript",
       name,
-      platformServices: [],
     });
 
     const specifyDeps = vi.fn((_opts: RunOptions) => Promise.resolve());
@@ -284,10 +249,8 @@ describe("create", () => {
   it("calls repoInitialiser.initialise with the target directory for Node.js scaffold", async () => {
     const name = "node-repo-init-spy";
     const selection = createNodeSelection({
-      databases: [],
       framework: "typescript",
       name,
-      platformServices: [],
     });
 
     const repoInitialiser = {
@@ -323,10 +286,8 @@ describe("create", () => {
   it("installs template-declared skills with the target directory", async () => {
     const name = "node-skills-spy";
     const selection = createNodeSelection({
-      databases: [],
       framework: "express",
       name,
-      platformServices: [],
     });
 
     const skillInstaller = {
@@ -350,10 +311,8 @@ describe("create", () => {
 
   it("installs skills before initialising the repo", async () => {
     const selection = createNodeSelection({
-      databases: [],
       framework: "express",
       name: "node-skills-order",
-      platformServices: [],
     });
 
     const callOrder: string[] = [];
@@ -382,10 +341,8 @@ describe("create", () => {
 
   it("does not install skills for a framework without a skills field", async () => {
     const selection = createNodeSelection({
-      databases: [],
       framework: "typescript",
       name: "node-no-skills",
-      platformServices: [],
     });
 
     const skillInstaller = {
@@ -436,14 +393,6 @@ describe("create", () => {
           return { files: resolvedLayerFiles, layers: [], symlinks: {} };
         },
       },
-      platformManifestGenerator: {
-        generatePlatformManifest(_input: CreateSelections) {
-          return "name: hello-universe\n";
-        },
-        validateManifest(_yaml: never): never {
-          throw new Error("validateManifest not used in create");
-        },
-      },
     };
 
     await create({ json: false }, deps);
@@ -451,15 +400,11 @@ describe("create", () => {
     expect(writerCalls).toStrictEqual([
       {
         files: resolvedLayerFiles,
-        targetDirectory: "/workspace/hello-universe",
-      },
-      {
-        files: { "platform.yaml": "name: hello-universe\n" },
-        targetDirectory: "/workspace/hello-universe",
+        targetDirectory: "/workspace/hello-scaffold",
       },
       {
         files: { LICENSE: expect.stringContaining("BSD 3-Clause License") },
-        targetDirectory: "/workspace/hello-universe",
+        targetDirectory: "/workspace/hello-scaffold",
       },
     ]);
     expect(deps.logger.success).toHaveBeenCalled();
@@ -506,19 +451,11 @@ describe("create", () => {
           return { files: resolvedLayerFiles, layers: [], symlinks: {} };
         },
       },
-      platformManifestGenerator: {
-        generatePlatformManifest(_input: CreateSelections) {
-          return "name: hello-universe\n";
-        },
-        validateManifest(_yaml: never): never {
-          throw new Error("validateManifest not used in create");
-        },
-      },
     };
 
     await create({ json: false }, deps);
 
-    expect(deps.logger.error).toHaveBeenCalledWith(message("/workspace/hello-universe"));
+    expect(deps.logger.error).toHaveBeenCalledWith(message("/workspace/hello-scaffold"));
   });
 
   describe("non-interactive mode", () => {
@@ -538,8 +475,6 @@ describe("create", () => {
           name: "non-interactive-app",
           runtime: "node",
           framework: "express",
-          databases: ["postgresql"],
-          services: ["auth"],
           packageManager: "pnpm",
         },
         deps,
@@ -572,8 +507,6 @@ describe("create", () => {
           name: "json-app",
           runtime: "node",
           framework: "express",
-          databases: [],
-          services: [],
           packageManager: "pnpm",
         },
         deps,
@@ -592,8 +525,6 @@ describe("create", () => {
         name: "json-app",
         runtime: "node",
         framework: "express",
-        databases: [],
-        platformServices: [],
         packageManager: "pnpm",
       });
       expect(envelope.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
@@ -791,25 +722,5 @@ describe("create", () => {
     );
 
     vi.mocked(isDockerAvailable).mockReturnValue(true);
-  });
-
-  it("fetches the latestCompatible version, not the latest", async () => {
-    vi.stubEnv("UNIVERSE_TEMPLATES_DIR", "");
-    vi.stubEnv("UNIVERSE_TEMPLATES_VERSION", "");
-
-    vi.mocked(resolveTemplateVersions).mockResolvedValue({
-      latest: "2.0.0",
-      latestCompatible: "1.5.0",
-    });
-    vi.mocked(ensureTemplateDir).mockResolvedValue(FIXTURES_DIR);
-
-    const deps = {
-      ...makeDeps(rootDirectory, createPromptPort(createPromptResult)),
-      isTTY: false,
-    };
-
-    await create({ json: false, yes: true, name: "compat-version-app" }, deps);
-
-    expect(ensureTemplateDir).toHaveBeenCalledWith("1.5.0", expect.anything());
   });
 });

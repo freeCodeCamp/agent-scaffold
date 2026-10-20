@@ -1,0 +1,5 @@
+blockExoticSubdeps: true
+minimumReleaseAge: 4320 # packages under 3 days old are simply rejected.
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 20160 # packages between 3 and 14 days old with no signature are also rejected.
+engineStrict: true

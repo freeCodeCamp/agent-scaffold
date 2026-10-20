@@ -11,11 +11,9 @@ import runtimeFixture from "../../fixtures/templates/layers/runtime.json";
 const runtimeData = RuntimeSchema.parse(runtimeFixture);
 
 const validNodeSelection: CreateSelections = {
-  databases: ["postgresql"],
   framework: "express",
-  name: "hello-universe",
+  name: "hello-scaffold",
   packageManager: "pnpm",
-  platformServices: ["auth"],
   runtime: "node",
 };
 
@@ -43,11 +41,9 @@ describe(CreateInputValidationService, () => {
     const service = new CreateInputValidationService(() => false, runtimeData);
 
     const result = service.validateCreateInput({
-      databases: [],
       framework: "html-css-js",
       name: "site-app",
       packageManager: "pnpm",
-      platformServices: [],
       runtime: "static_web",
     });
 
@@ -124,43 +120,8 @@ describe(CreateInputValidationService, () => {
 
     const act = () =>
       service.validateCreateInput({
-        databases: [],
         framework: "html-css-js",
         name: "site-app",
-        platformServices: [],
-        runtime: "static_web",
-      });
-
-    expect(act).toThrow(UsageError);
-  });
-
-  it("rejects unsupported Static database combinations", () => {
-    const service = new CreateInputValidationService(() => false, runtimeData);
-
-    const act = () =>
-      service.validateCreateInput({
-        databases: ["postgresql"],
-        framework: "html-css-js",
-        name: "site-app",
-        packageManager: "pnpm",
-        platformServices: [],
-        runtime: "static_web",
-      });
-
-    expect(act).toThrow(UsageError);
-  });
-
-  it("rejects unsupported Static platform service combinations", () => {
-    const service = new CreateInputValidationService(() => false, runtimeData);
-
-    const act = () =>
-      service.validateCreateInput({
-        databases: [],
-        framework: "html-css-js",
-        name: "site-app",
-        packageManager: "pnpm",
-        // @ts-expect-error forcing invalid platform service
-        platformServices: ["fake"],
         runtime: "static_web",
       });
 

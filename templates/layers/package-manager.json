@@ -1,0 +1,33 @@
+{
+  "bun": {
+    "devCmd": [
+      "bun",
+      "run",
+      "dev"
+    ],
+    "lockfile": "bun.lock",
+    "manifests": [
+      "package.json",
+      "bunfig.toml"
+    ],
+    "pmInstall": "RUN npm install -g bun@{{pmVersion}}",
+    "pmVersion": "1.3.14",
+    "recommended": false
+  },
+  "pnpm": {
+    "devCmd": [
+      "pnpm",
+      "run",
+      "dev"
+    ],
+    "lockfile": "pnpm-lock.yaml",
+    "manifests": [
+      "package.json",
+      "pnpm-workspace.yaml"
+    ],
+    "pmInstall": "RUN corepack use pnpm@{{pmVersion}} && corepack enable pnpm && pnpm config set store-dir /home/node/.local/share/pnpm",
+    "pmVersion": "10.34.1",
+    "preinstall": "npx only-allow pnpm",
+    "recommended": true
+  }
+}

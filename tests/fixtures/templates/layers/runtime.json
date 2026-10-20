@@ -1,18 +1,29 @@
 {
   "node": {
     "baseImage": "node:24-slim",
-    "databases": ["postgresql", "redis"],
-    "frameworks": ["express", "react-vite", "tanstack-shadcn", "typescript"],
-    "packageManagers": ["pnpm", "bun"],
-    "recommended": true,
-    "services": ["analytics", "auth", "email"]
+    "frameworks": [
+      "express",
+      "react-vite",
+      "tanstack-shadcn",
+      "typescript"
+    ],
+    "packageManagers": [
+      "pnpm",
+      "bun"
+    ],
+    "recommended": true
   },
   "static_web": {
     "baseImage": "node:24-slim",
-    "databases": [],
-    "frameworks": ["html-css-js", "react-vite", "tanstack-shadcn"],
-    "packageManagers": ["pnpm", "bun"],
-    "recommended": true,
-    "services": ["analytics", "auth", "email"]
+    "frameworks": [
+      "html-css-js",
+      "react-vite",
+      "tanstack-shadcn"
+    ],
+    "packageManagers": [
+      "pnpm",
+      "bun"
+    ],
+    "recommended": true
   }
 }

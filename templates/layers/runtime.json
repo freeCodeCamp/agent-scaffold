@@ -1,0 +1,29 @@
+{
+  "node": {
+    "baseImage": "node:24-alpine",
+    "frameworks": [
+      "express",
+      "typescript"
+    ],
+    "packageManagers": [
+      "pnpm",
+      "bun"
+    ],
+    "recommended": false
+  },
+  "static_web": {
+    "baseImage": "node:24-alpine",
+    "frameworks": [
+      "html-css-js",
+      "react-vite",
+      "tanstack-shadcn",
+      "astro-lite",
+      "astro-react"
+    ],
+    "packageManagers": [
+      "pnpm",
+      "bun"
+    ],
+    "recommended": true
+  }
+}

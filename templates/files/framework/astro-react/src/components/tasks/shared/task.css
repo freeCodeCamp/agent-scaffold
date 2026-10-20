@@ -1,0 +1,74 @@
+.task {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  background: var(--tertiary-background);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.task input:disabled {
+  cursor: not-allowed;
+}
+
+.question {
+  padding: 0 var(--space-xs);
+}
+
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.feedback {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-weight: 700;
+  min-height: 1.5em;
+}
+
+.feedback.correct {
+  color: var(--success-color);
+}
+
+.feedback.incorrect {
+  color: var(--danger-color);
+}
+
+.item-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: var(--secondary-background);
+  border: 1px solid var(--quaternary-background);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  cursor: grab;
+  touch-action: none;
+}
+
+.item-grip {
+  flex-shrink: 0;
+  color: var(--quaternary-color);
+}
+
+.item-card:focus-visible {
+  outline: var(--border-focus);
+  outline-offset: 2px;
+}
+
+.item-dragging {
+  opacity: 0.4;
+}
+
+.item-overlay {
+  cursor: grabbing;
+  box-shadow: 0 4px 12px var(--primary-background-translucent);
+}
+
+.unshuffled .item-card {
+  visibility: hidden;
+}

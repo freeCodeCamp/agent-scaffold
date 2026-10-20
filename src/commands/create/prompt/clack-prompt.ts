@@ -1,17 +1,9 @@
 import { isCancel, multiselect, select, text } from "@clack/prompts";
-import type {
-  CreateSelections,
-  DatabaseOption,
-  PackageManagerOption,
-  ServiceOption,
-  Prompt,
-} from "./prompt.port.js";
+import type { CreateSelections, PackageManagerOption, Prompt } from "./prompt.port.js";
 import {
-  databaseOptions,
   recommendedFrameworkOptions,
   recommendedPackageManagerOptions,
   recommendedRuntimeOptions,
-  serviceOptions,
 } from "../layer-composition/allowed-configuration.js";
 import type { Labels } from "../layer-composition/schemas/labels.js";
 import type {
@@ -168,39 +160,9 @@ class ClackPrompt implements Prompt {
       }
     }
 
-    const availableDatabases = databaseOptions(this.runtimeData, runtime);
-
-    let databases: string[] | symbol = [];
-    if (availableDatabases.length > 0) {
-      databases = await this.api.multiselect({
-        message: "Select 0 or more databases (space to select, enter to continue)",
-        options: this.toPromptOptions(availableDatabases, "database"),
-        required: false,
-      });
-    }
-
-    if (this.api.isCancel(databases)) {
-      return null;
-    }
-
-    const availableServices = serviceOptions(this.runtimeData, runtime);
-    let platformServices: string[] | symbol = [];
-    if (availableServices.length > 0) {
-      platformServices = await this.api.multiselect({
-        message: "Select 0 or more platform services (space to select, enter to continue)",
-        options: this.toPromptOptions(serviceOptions(this.runtimeData, runtime), "service"),
-        required: false,
-      });
-    }
-    if (this.api.isCancel(platformServices)) {
-      return null;
-    }
-
     return {
-      databases: databases as DatabaseOption[],
       framework,
       name,
-      platformServices: platformServices as ServiceOption[],
       runtime,
       ...(packageManager !== undefined && {
         packageManager: packageManager as PackageManagerOption,

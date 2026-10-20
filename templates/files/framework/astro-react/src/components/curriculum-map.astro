@@ -1,0 +1,104 @@
+---
+import './curriculum-map.css';
+import type { CurriculumOutline } from '../lib/curriculum-outline';
+import { buildLearnPath, buildLessonRouteSlug } from '../lib/curriculum-route-utils';
+
+type Props = {
+  curriculum: CurriculumOutline;
+  currentLessonSlug?: string;
+};
+
+const { curriculum, currentLessonSlug } = Astro.props;
+---
+
+<nav aria-label="Curriculum sections" class="navigation">
+  {
+    curriculum.sections.map((section) => {
+      const containsCurrentLesson = (moduleTitle: string, lessons: { title: string }[]) =>
+        lessons.some(
+          (lesson) =>
+            buildLessonRouteSlug(section.title, moduleTitle, lesson.title) === currentLessonSlug,
+        );
+
+      // Learn page has no current lesson -> everything it expanded
+      // Lesson page has current lesson -> expand that section
+      const sectionOpen =
+        !currentLessonSlug ||
+        section.modules.some((module) => containsCurrentLesson(module.title, module.lessons));
+
+      return (
+        <details class="section" open={sectionOpen}>
+          <summary>
+            <h2>{section.title}</h2>
+          </summary>
+
+          {section.modules.map((module) => {
+            const moduleOpen =
+              !currentLessonSlug || containsCurrentLesson(module.title, module.lessons);
+
+            return (
+              <details class="module-block" open={moduleOpen}>
+                <summary>
+                  <h3>{module.title}</h3>
+                </summary>
+                <ul class="list">
+                  {module.lessons.map((lesson) => {
+                    const slug = buildLessonRouteSlug(section.title, module.title, lesson.title);
+                    const isCurrent = slug === currentLessonSlug;
+
+                    return (
+                      <li class="item">
+                        <a
+                          href={buildLearnPath(section.title, module.title, lesson.title)}
+                          aria-current={isCurrent ? ('page' as const) : undefined}
+                          class={isCurrent ? 'item-link current' : 'item-link'}
+                        >
+                          <span>{lesson.title}</span>
+                          <span class="completed-badge" data-lesson-slug={slug}>
+                            <span class="badge-pending" aria-hidden="true">
+                              –
+                            </span>
+                            <span class="badge-complete">
+                              <span aria-hidden="true">✓</span>
+                              <span class="sr-only"> Completed</span>
+                            </span>
+                          </span>
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </details>
+            );
+          })}
+        </details>
+      );
+    })
+  }
+</nav>
+
+<script is:inline>
+  (function () {
+    function applyProgress() {
+      try {
+        const stored = localStorage.getItem('progress');
+        const completed = stored ? JSON.parse(stored) : [];
+        if (!Array.isArray(completed)) return;
+
+        for (const slug of completed) {
+          if (typeof slug !== 'string' || !/^[a-z0-9-]+$/.test(slug)) continue;
+          const badge = document.querySelector('.completed-badge[data-lesson-slug="' + slug + '"]');
+          if (badge) badge.classList.add('completed');
+        }
+      } catch {
+        // ignore malformed stored progress
+      }
+    }
+
+    // Inline scripts are not run during page transitions so the progress
+    // needs re-applying
+    document.addEventListener('astro:after-swap', applyProgress);
+
+    applyProgress();
+  })();
+</script>

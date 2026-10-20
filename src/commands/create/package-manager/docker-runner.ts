@@ -4,7 +4,7 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-const IMAGE_TAG = "universe-runner:pm";
+const IMAGE_TAG = "agent-scaffold-runner:pm";
 
 const ensureImageBuilt = async (cwd: string): Promise<void> => {
   const dockerfile = resolve(cwd, "Dockerfile");

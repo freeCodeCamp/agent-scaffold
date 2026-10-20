@@ -10,7 +10,7 @@ describe("loadFromDir", () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), "universe-tpl-test-"));
+    tmpDir = await mkdtemp(join(tmpdir(), "agent-scaffold-tpl-test-"));
   });
 
   afterEach(async () => {
@@ -37,8 +37,6 @@ describe("loadFromDir", () => {
     expect(registry.frameworks).toHaveProperty("express");
     expect(registry["package-managers"]).toHaveProperty("pnpm");
     expect(registry.runtime).toHaveProperty("node");
-    expect(registry.services).toHaveProperty("auth");
-    expect(registry.services).toHaveProperty("postgresql");
     expect(labels).toHaveProperty("runtime");
   });
 

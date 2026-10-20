@@ -1,0 +1,28 @@
+.landing {
+  max-width: 700px;
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.header {
+  text-align: center;
+}
+
+.header h1 {
+  font-size: var(--text-size-3xl);
+}
+
+.description {
+  max-width: 60ch;
+  margin: 0 auto;
+  color: var(--secondary-color);
+}
+
+.cta {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-2xl);
+}

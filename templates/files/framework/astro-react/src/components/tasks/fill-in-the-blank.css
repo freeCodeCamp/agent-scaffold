@@ -1,0 +1,16 @@
+.prompt {
+  line-height: var(--line-height-loose);
+}
+
+.blank {
+  display: inline-block;
+  width: 8em;
+  margin: 0 var(--space-xs);
+  padding: 0.1em var(--space-xs);
+  border: 1px solid var(--quaternary-background);
+  border-radius: var(--radius-sm);
+  background: var(--secondary-background);
+  color: var(--primary-color);
+  font: inherit;
+  text-align: center;
+}

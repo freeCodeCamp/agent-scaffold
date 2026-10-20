@@ -1,0 +1,32 @@
+.fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--quaternary-background);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.option + .option {
+  margin-top: var(--space-sm);
+}
+
+.option:has(input:disabled) {
+  cursor: not-allowed;
+}
+
+.option:has(:focus-visible) {
+  outline: var(--border-focus);
+  outline-offset: 2px;
+}
+
+.option input:focus-visible {
+  outline: none;
+}

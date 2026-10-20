@@ -1,0 +1,65 @@
+---
+import Layout from '../layouts/layout.astro';
+import { loadCurriculum } from '../lib/load-curriculum';
+import { getOrderedLessons } from '../lib/curriculum-route-utils';
+
+import '../components/button.css';
+import '../styles/pages.css';
+import '../styles/landing.css';
+
+const curriculum = await loadCurriculum();
+const lessons = getOrderedLessons(curriculum).map((entry) => ({
+  slug: entry.slug,
+  href: entry.href,
+}));
+
+const firstLesson = lessons[0];
+---
+
+<Layout title={curriculum.title} brand={curriculum.title}>
+  <main id="main-content" class="main landing" tabindex="-1">
+    <header class="header">
+      <h1>{curriculum.title}</h1>
+      {curriculum.description ? <p class="description">{curriculum.description}</p> : null}
+    </header>
+
+    <div class="cta">
+      <a
+        id="landing-cta"
+        class="btn btn-primary btn-lg"
+        href={firstLesson ? firstLesson.href : '/learn'}
+      >
+        Start learning
+      </a>
+      <a class="btn btn-secondary btn-lg" href="/learn">Browse lessons</a>
+    </div>
+  </main>
+</Layout>
+
+<script define:vars={{ lessons }} is:inline>
+  (function () {
+    try {
+      const stored = localStorage.getItem('progress');
+      const completed = stored ? JSON.parse(stored) : [];
+      if (!Array.isArray(completed) || completed.length === 0) {
+        return;
+      }
+
+      const cta = document.getElementById('landing-cta');
+      if (!cta) {
+        return;
+      }
+
+      const nextLesson = lessons.find((lesson) => !completed.includes(lesson.slug));
+      if (!nextLesson) {
+        cta.remove();
+        return;
+      }
+
+      cta.textContent = 'Continue learning';
+      cta.href = nextLesson.href;
+    } catch {
+      // ignore malformed stored progress
+    }
+  })();
+</script>

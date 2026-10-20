@@ -1,0 +1,72 @@
+.image-select-loading {
+  width: 100%;
+  min-height: 200px;
+  background: var(--quaternary-background);
+  border-radius: var(--radius-md);
+  opacity: 0.3;
+}
+
+.image-select-error {
+  color: var(--danger-color);
+}
+
+.image-select-container {
+  width: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  --region-halo: #ffffff;
+}
+
+.image-select-container svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.image-select-container:focus-visible {
+  outline: none;
+}
+
+.image-select-container [role='checkbox'] {
+  cursor: pointer;
+}
+
+.image-select-container [aria-disabled='true'] {
+  cursor: default;
+  pointer-events: none;
+}
+
+.image-select-container [role='checkbox']:hover,
+.image-select-container:focus-visible .region-focused {
+  stroke: var(--blue-mid) !important;
+  stroke-opacity: 1 !important;
+  stroke-width: 2px !important;
+  vector-effect: non-scaling-stroke;
+  opacity: 1 !important;
+  filter: drop-shadow(1.5px 0 0 var(--region-halo)) drop-shadow(-1.5px 0 0 var(--region-halo))
+    drop-shadow(0 1.5px 0 var(--region-halo)) drop-shadow(0 -1.5px 0 var(--region-halo));
+}
+
+.region-selected {
+  fill: var(--highlight-color) !important;
+  fill-opacity: 0.06 !important;
+  stroke: var(--highlight-color) !important;
+  stroke-opacity: 1 !important;
+  stroke-width: 2px !important;
+  vector-effect: non-scaling-stroke;
+  opacity: 1 !important;
+  filter: drop-shadow(1.5px 0 0 var(--region-halo)) drop-shadow(-1.5px 0 0 var(--region-halo))
+    drop-shadow(0 1.5px 0 var(--region-halo)) drop-shadow(0 -1.5px 0 var(--region-halo));
+}
+
+.region-correct {
+  fill: var(--success-color) !important;
+  fill-opacity: 0.06 !important;
+  stroke: var(--success-color) !important;
+  stroke-opacity: 1 !important;
+  stroke-width: 2px !important;
+  vector-effect: non-scaling-stroke;
+  opacity: 1 !important;
+  filter: drop-shadow(1.5px 0 0 var(--region-halo)) drop-shadow(-1.5px 0 0 var(--region-halo))
+    drop-shadow(0 1.5px 0 var(--region-halo)) drop-shadow(0 -1.5px 0 var(--region-halo));
+}

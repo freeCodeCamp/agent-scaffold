@@ -27,7 +27,6 @@ jobs:
     outputs:
       release_created: ${{ steps.rp.outputs.release_created }}
       version: ${{ steps.rp.outputs.version }}
-      tag_name: ${{ steps.rp.outputs.tag_name }}
       sha: ${{ steps.rp.outputs.sha }}
     steps:
       - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
@@ -51,57 +50,6 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/test.yml
-
-  build:
-    needs: [release-please, test]
-    if: needs.release-please.outputs.release_created == 'true'
-    permissions:
-      contents: read
-    strategy:
-      matrix:
-        include:
-          - os: macos-latest
-            artifact: universe-darwin-arm64
-          - os: macos-15-intel
-            artifact: universe-darwin-amd64
-          - os: ubuntu-latest
-            artifact: universe-linux-amd64
-          - os: ubuntu-24.04-arm
-            artifact: universe-linux-arm64
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
-        with:
-          # Build the exact commit release-please tagged, not branch HEAD, so
-          # the binaries match the published tag + GitHub Release.
-          ref: ${{ needs.release-please.outputs.sha }}
-      - uses: pnpm/action-setup@b307475762933b98ed359c036b0e51f26b63b74b
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
-        with:
-          node-version: "24"
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm tsdown
-      - name: Generate SEA blob
-        run: node --experimental-sea-config sea-config.json
-      - name: Create executable
-        run: cp "$(which node)" "${{ matrix.artifact }}"
-      - name: Remove existing signature (macOS)
-        if: runner.os == 'macOS'
-        run: codesign --remove-signature "${{ matrix.artifact }}"
-      - name: Inject SEA blob
-        run: pnpm exec postject ${{ matrix.artifact }} NODE_SEA_BLOB dist/sea.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2 --macho-segment-name NODE_SEA
-      - name: Sign macOS binary
-        if: runner.os == 'macOS'
-        run: codesign --sign - --entitlements entitlements.plist "${{ matrix.artifact }}"
-      - name: Generate checksum
-        run: shasum -a 256 ${{ matrix.artifact }} > ${{ matrix.artifact }}.sha256
-      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
-        with:
-          name: ${{ matrix.artifact }}
-          path: |
-            ${{ matrix.artifact }}
-            ${{ matrix.artifact }}.sha256
 
   # npm publish stays INLINE here with id-token: write. The npm Trusted
   # Publisher binding matches on org + repo + this workflow's filename
@@ -133,24 +81,3 @@ jobs:
       # on the tagged commit). Stable-only: dist-tag is always `latest`.
       # --provenance is implicit under Trusted Publishing; kept explicit.
       - run: npm publish --provenance --access public --tag latest
-
-  upload:
-    needs: [release-please, build, publish]
-    if: needs.release-please.outputs.release_created == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0
-        with:
-          merge-multiple: true
-      - name: Upload binaries to the release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "${{ needs.release-please.outputs.tag_name }}" \
-            universe-darwin-arm64 universe-darwin-arm64.sha256 \
-            universe-darwin-amd64 universe-darwin-amd64.sha256 \
-            universe-linux-amd64 universe-linux-amd64.sha256 \
-            universe-linux-arm64 universe-linux-arm64.sha256 \
-            --repo "${{ github.repository }}"

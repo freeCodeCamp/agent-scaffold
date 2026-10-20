@@ -22,25 +22,21 @@ const packageManagerData = PackageManagerSchema.parse(packageManagerFixture);
 const labelsData = LabelsSchema.parse(labelsFixture);
 const CANCELLED = Symbol("cancelled");
 
-const createMockApi = (
-  selectResponses: string[] = ["node", "express", "pnpm"],
-  multiselectResponses: string[][] = [["postgresql"], ["auth"]],
-): ClackPromptApi => {
+const createMockApi = (selectResponses: string[] = ["node", "express", "pnpm"]): ClackPromptApi => {
   const selectQueue = [...selectResponses];
-  const multiselectQueue = [...multiselectResponses];
 
   return {
     isCancel(value: unknown): value is symbol {
       return value === CANCELLED;
     },
     multiselect() {
-      return Promise.resolve(multiselectQueue.shift() ?? []);
+      return Promise.resolve([]);
     },
     select() {
       return Promise.resolve(selectQueue.shift() ?? "None");
     },
     text() {
-      return Promise.resolve("hello-universe");
+      return Promise.resolve("hello-scaffold");
     },
   };
 };
@@ -50,11 +46,7 @@ describe(ClackPrompt, () => {
     const events: string[] = [];
     const selectQueue = ["node", "typescript", "pnpm"];
     const mockApi: ClackPromptApi = {
-      ...createMockApi(["node", "typescript", "pnpm"], [["none"], ["none"]]),
-      multiselect(options) {
-        events.push(options.message);
-        return Promise.resolve(["none"]);
-      },
+      ...createMockApi(["node", "typescript", "pnpm"]),
       select(options) {
         events.push(options.message);
         const nextSelection = selectQueue.shift() as string;
@@ -62,7 +54,7 @@ describe(ClackPrompt, () => {
       },
       text(options) {
         events.push(options.message);
-        return Promise.resolve("hello-universe");
+        return Promise.resolve("hello-scaffold");
       },
     };
 
@@ -81,8 +73,6 @@ describe(ClackPrompt, () => {
       "Select runtime",
       "Select framework",
       "Select package manager",
-      "Select 0 or more databases (space to select, enter to continue)",
-      "Select 0 or more platform services (space to select, enter to continue)",
     ]);
   });
 
@@ -90,11 +80,7 @@ describe(ClackPrompt, () => {
     const events: string[] = [];
     const selectQueue = ["static_web", "html-css-js", "pnpm"];
     const mockApi: ClackPromptApi = {
-      ...createMockApi(["static_web", "html-css-js", "pnpm"], [["none"], ["none"]]),
-      multiselect(options) {
-        events.push(options.message);
-        return Promise.resolve(["none"]);
-      },
+      ...createMockApi(["static_web", "html-css-js", "pnpm"]),
       select(options) {
         events.push(options.message);
         const nextSelection = selectQueue.shift() as string;
@@ -102,7 +88,7 @@ describe(ClackPrompt, () => {
       },
       text(options) {
         events.push(options.message);
-        return Promise.resolve("hello-universe");
+        return Promise.resolve("hello-scaffold");
       },
     };
 
@@ -121,7 +107,6 @@ describe(ClackPrompt, () => {
       "Select runtime",
       "Select framework",
       "Select package manager",
-      "Select 0 or more platform services (space to select, enter to continue)",
     ]);
   });
 
@@ -155,7 +140,7 @@ describe(ClackPrompt, () => {
           value: string | undefined,
         ) => string | Error | undefined;
         validationMessage = validate("InvalidName") as string;
-        return Promise.resolve("hello-universe");
+        return Promise.resolve("hello-scaffold");
       },
     };
 
@@ -176,21 +161,13 @@ describe(ClackPrompt, () => {
 
   it("returns selected values including package manager for Node runtime", async () => {
     const expected: CreateSelections = {
-      databases: ["postgresql", "redis"],
       framework: "express",
-      name: "hello-universe",
+      name: "hello-scaffold",
       packageManager: "pnpm",
-      platformServices: ["auth", "analytics"],
       runtime: "node",
     };
 
-    const mockApi = createMockApi(
-      ["node", "express", "pnpm"],
-      [
-        ["postgresql", "redis"],
-        ["auth", "analytics"],
-      ],
-    );
+    const mockApi = createMockApi(["node", "express", "pnpm"]);
 
     const adapter: Prompt = new ClackPrompt(
       runtimeData,
@@ -207,15 +184,13 @@ describe(ClackPrompt, () => {
 
   it("returns selected values with package manager for Static runtime", async () => {
     const expected: CreateSelections = {
-      databases: [],
       framework: "html-css-js",
-      name: "hello-universe",
+      name: "hello-scaffold",
       packageManager: "pnpm",
-      platformServices: [],
       runtime: "static_web",
     };
 
-    const mockApi = createMockApi(["static_web", "html-css-js", "pnpm"], [[], []]);
+    const mockApi = createMockApi(["static_web", "html-css-js", "pnpm"]);
 
     const adapter: Prompt = new ClackPrompt(
       runtimeData,
@@ -238,7 +213,7 @@ describe(ClackPrompt, () => {
     const events: string[] = [];
     const selectQueue = ["node", "express"];
     const mockApi: ClackPromptApi = {
-      ...createMockApi(["node", "express"], [[], []]),
+      ...createMockApi(["node", "express"]),
       select(options) {
         events.push(options.message);
         const nextSelection = selectQueue.shift() as string;
@@ -261,7 +236,7 @@ describe(ClackPrompt, () => {
     const events: string[] = [];
     const selectQueue = ["express", "pnpm"];
     const mockApi: ClackPromptApi = {
-      ...createMockApi(["express", "pnpm"], [[], []]),
+      ...createMockApi(["express", "pnpm"]),
       select(options) {
         events.push(options.message);
         const nextSelection = selectQueue.shift() as string;
@@ -310,7 +285,7 @@ describe(ClackPrompt, () => {
     const events: string[] = [];
     const selectQueue = ["node", "pnpm"];
     const mockApi: ClackPromptApi = {
-      ...createMockApi(["node", "pnpm"], [[], []]),
+      ...createMockApi(["node", "pnpm"]),
       select(options) {
         events.push(options.message);
         const nextSelection = selectQueue.shift() as string;
@@ -382,7 +357,7 @@ describe(ClackPrompt, () => {
     let frameworkOptions: { label: string; value: string }[] = [];
     const selectQueue = ["node", "express", "pnpm"];
     const mockApi: ClackPromptApi = {
-      ...createMockApi(["node", "express", "pnpm"], [[], []]),
+      ...createMockApi(["node", "express", "pnpm"]),
       select(options) {
         if (options.message === "Select framework") {
           frameworkOptions = options.options;

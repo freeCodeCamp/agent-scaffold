@@ -1,0 +1,29 @@
+.main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-lg) var(--space-2xl);
+}
+
+.header {
+  margin-bottom: var(--space-lg);
+}
+
+.page-heading {
+  margin-bottom: var(--space-lg);
+}
+
+.page-label {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--quaternary-color);
+}
+
+.page-label-divider {
+  width: 100%;
+  margin-top: var(--space-xs);
+  border: none;
+  border-top: 1px solid var(--quaternary-color);
+}

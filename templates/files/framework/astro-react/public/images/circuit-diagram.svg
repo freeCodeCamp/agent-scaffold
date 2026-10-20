@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 280">
+  <rect width="340" height="280" fill="var(--tertiary-background, #1b1b32)" rx="8"/>
+
+  <!-- wire loop connecting the four components -->
+  <path
+    d="M70,60 L130,60 M210,60 L270,60 M270,60 L270,100 M270,180 L270,220 M270,220 L210,220 M130,220 L70,220 M70,220 L70,180 M70,100 L70,60"
+    fill="none"
+    stroke="var(--tertiary-color, #dfdfe2)"
+    stroke-width="2"
+    pointer-events="none"
+  />
+
+  <!-- resistor: top edge -->
+  <rect id="resistor" data-region="true" data-label="Resistor" x="130" y="42" width="80" height="36" fill="transparent"/>
+  <path
+    d="M130,60 L140,60 L150,48 L160,72 L170,48 L180,72 L190,48 L200,60 L210,60"
+    fill="none"
+    stroke="var(--tertiary-color, #dfdfe2)"
+    stroke-width="2"
+    pointer-events="none"
+  />
+
+  <!-- capacitor: right edge -->
+  <rect id="capacitor" data-region="true" data-label="Capacitor" x="252" y="100" width="36" height="80" fill="transparent"/>
+  <path
+    d="M270,100 L270,135 M255,135 L285,135 M255,145 L285,145 M270,145 L270,180"
+    fill="none"
+    stroke="var(--tertiary-color, #dfdfe2)"
+    stroke-width="2"
+    pointer-events="none"
+  />
+
+  <!-- switch: bottom edge (drawn open) -->
+  <rect id="switch" data-region="true" data-label="Switch" x="130" y="202" width="80" height="36" fill="transparent"/>
+  <path
+    d="M210,220 L190,220 M150,220 L130,220 M150,220 L185,205"
+    fill="none"
+    stroke="var(--tertiary-color, #dfdfe2)"
+    stroke-width="2"
+    pointer-events="none"
+  />
+  <circle cx="190" cy="220" r="4" fill="var(--tertiary-color, #dfdfe2)" pointer-events="none"/>
+  <circle cx="150" cy="220" r="4" fill="var(--tertiary-color, #dfdfe2)" pointer-events="none"/>
+
+  <!-- battery: left edge -->
+  <rect id="battery" data-region="true" data-label="Battery" x="42" y="100" width="56" height="80" fill="transparent"/>
+  <path
+    d="M70,180 L70,155 M70,145 L70,100"
+    fill="none"
+    stroke="var(--tertiary-color, #dfdfe2)"
+    stroke-width="2"
+    pointer-events="none"
+  />
+  <line x1="58" y1="155" x2="82" y2="155" stroke="var(--tertiary-color, #dfdfe2)" stroke-width="6" pointer-events="none"/>
+  <line x1="50" y1="145" x2="90" y2="145" stroke="var(--tertiary-color, #dfdfe2)" stroke-width="2" pointer-events="none"/>
+</svg>

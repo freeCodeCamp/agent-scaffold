@@ -1,6 +1,5 @@
 import { log } from "@clack/prompts";
 import { CliError } from "../errors.js";
-import { ProxyError, SiteReservedError } from "../lib/proxy-client.js";
 import { buildEnvelope, buildErrorEnvelope } from "./envelope.js";
 import { EXIT_USAGE } from "./exit-codes.js";
 import { redact, redactObject } from "./redact.js";
@@ -112,50 +111,16 @@ function renderError(
 }
 
 /**
- * Format a proxy or generic error into a normalized envelope.
+ * Format an error into a normalized envelope.
  *
- *   ProxyError → `<cmd> failed (<code>): <message>` + hint
  *   CliError   → preserve message verbatim
  *   Error      → preserve message verbatim
  *   other      → String(err)
  */
 export function parseError(
-  command: string,
+  _command: string,
   err: unknown,
 ): { exitCode: number; message: string; kind?: string; requestId?: string } {
-  if (err instanceof ProxyError) {
-    let message = `${command} failed (${err.code}): ${err.message}`;
-    if (err.code === "user_unauthorized") {
-      // A team-membership probe denied the caller. The usual real cause
-      // is the active token, not actual non-membership: a token can read
-      // /user yet 404 on org membership when it lacks the read:org scope
-      // or SAML-SSO authorization. $GITHUB_TOKEN / $GH_TOKEN also shadow
-      // `gh auth token` in the identity chain, so a low-scope env token
-      // silently wins. Surface that so the failure is actionable.
-      message +=
-        "\n  hint: the active GitHub token may lack the read:org scope or SSO authorization for the org. " +
-        "$GITHUB_TOKEN / $GH_TOKEN override `gh auth token` — run `universe whoami` to check the active identity source, " +
-        "then unset them or re-authorize the token (Configure SSO).";
-    } else if (err instanceof SiteReservedError) {
-      message +=
-        "\n  hint: this name is held by a delete and cannot be registered yet." +
-        (err.reservedUntil ? ` The hold expires at ${err.reservedUntil}.` : "") +
-        " Run `universe sites undelete <slug>` to bring the site back, or wait for the hold to expire." +
-        (err.hint ? ` ${err.hint}` : "");
-    } else if (err.status === 410) {
-      message +=
-        "\n  hint: the site is no longer registered, so this cannot be undone from here. " +
-        "Its name may have been released, or the hold may have expired.";
-    } else if (err.hint) {
-      message += `\n  hint: ${err.hint}`;
-    }
-    return {
-      exitCode: err.exitCode,
-      message,
-      kind: err.code,
-      requestId: err.requestId,
-    };
-  }
   if (err instanceof CliError) {
     return { exitCode: err.exitCode, message: err.message };
   }

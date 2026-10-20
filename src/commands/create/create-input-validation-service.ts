@@ -1,18 +1,15 @@
 import { UsageError } from "../../errors.js";
 import {
-  databaseOptions,
   frameworkOptions,
   packageManagerOptions,
-  serviceOptions,
 } from "./layer-composition/allowed-configuration.js";
 import type { RuntimeCombinations } from "./layer-composition/allowed-configuration.js";
 import type { Runtime } from "./layer-composition/schemas/layers.js";
 import type { CreateSelections } from "./prompt/prompt.port.js";
-import { SITE_NAME_PATTERN } from "../../lib/platform-yaml.schema.js";
 
 type PathExists = (path: string) => boolean;
 
-const NONE_VALUE = "none";
+const PROJECT_NAME_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 interface CreateInputValidator {
   validateCreateInput(input: CreateSelections): CreateSelections;
@@ -40,7 +37,7 @@ class CreateInputValidationService implements CreateInputValidator {
   }
 
   private validateName(name: string): void {
-    if (SITE_NAME_PATTERN.test(name)) {
+    if (PROJECT_NAME_PATTERN.test(name)) {
       return;
     }
 
@@ -57,10 +54,8 @@ class CreateInputValidationService implements CreateInputValidator {
     }
 
     const config: RuntimeCombinations = {
-      databases: databaseOptions(this.runtimeData, input.runtime),
       frameworks: frameworkOptions(this.runtimeData, input.runtime),
       packageManagers: packageManagerOptions(this.runtimeData, input.runtime),
-      platformServices: serviceOptions(this.runtimeData, input.runtime),
     };
 
     this.validateRuntimeSelections(input, config);
@@ -84,30 +79,6 @@ class CreateInputValidationService implements CreateInputValidator {
       }
     } else if (input.packageManager !== undefined) {
       throw new UsageError("This runtime does not support a package manager");
-    }
-
-    this.ensureNoneExclusive("databases", input.databases);
-    this.ensureNoneExclusive("platform services", input.platformServices);
-
-    this.ensureAllowedValues(input.databases, config.databases, "databases");
-    this.ensureAllowedValues(input.platformServices, config.platformServices, "platform services");
-  }
-
-  private ensureNoneExclusive(field: string, values: string[]): void {
-    if (!values.includes(NONE_VALUE)) {
-      return;
-    }
-
-    if (values.length > 1) {
-      throw new UsageError(`"none" is exclusive: remove other ${field} selections`);
-    }
-  }
-
-  private ensureAllowedValues(values: string[], allowedValues: string[], field: string): void {
-    for (const value of values) {
-      if (!allowedValues.includes(value)) {
-        throw new UsageError(`Unsupported ${field} value: ${value}`);
-      }
     }
   }
 }

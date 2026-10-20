@@ -1,0 +1,18 @@
+---
+import Layout from '../layouts/layout.astro';
+import { Progress } from '../components/progress';
+import { loadCurriculum } from '../lib/load-curriculum';
+import { getOrderedLessons } from '../lib/curriculum-route-utils';
+
+const curriculum = await loadCurriculum();
+
+const lessons = getOrderedLessons(curriculum).map((entry) => ({
+  slug: entry.slug,
+  href: entry.href,
+  section: entry.section.title,
+}));
+---
+
+<Layout title={`Progress - ${curriculum.title}`} brand={curriculum.title}>
+  <Progress lessons={lessons} client:load />
+</Layout>

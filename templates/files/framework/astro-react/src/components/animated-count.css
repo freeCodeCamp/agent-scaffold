@@ -1,0 +1,20 @@
+@property --n {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+.animated-count {
+  counter-reset: n var(--n);
+  transition: --n 0.4s ease-out;
+}
+
+.animated-count::before {
+  content: counter(n);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animated-count {
+    transition: none;
+  }
+}

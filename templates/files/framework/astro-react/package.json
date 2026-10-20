@@ -1,0 +1,57 @@
+{
+  "name": "{{name}}",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": "24"
+  },
+  "scripts": {
+    "astro": "astro",
+    "build": "astro build",
+    "dev": "astro dev --host --ignore-lock",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "preview": "astro preview",
+    "test": "vitest",
+    "typecheck": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/react": "^6",
+    "@dnd-kit/core": "^6",
+    "@dnd-kit/sortable": "^10",
+    "@dnd-kit/utilities": "^3",
+    "@nanostores/react": "^1",
+    "astro": "^7",
+    "mdast-util-gfm": "^3",
+    "mdast-util-to-markdown": "^2",
+    "mdast-util-to-string": "^4",
+    "nanostores": "^1",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-markdown": "^10",
+    "remark-gfm": "^4",
+    "remark-parse": "^11",
+    "unified": "^11"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9",
+    "@eslint/js": "^10",
+    "@testing-library/jest-dom": "^7",
+    "@testing-library/react": "^16",
+    "@testing-library/user-event": "^14",
+    "@types/mdast": "^4",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^10",
+    "eslint-config-prettier": "^10",
+    "eslint-plugin-astro": "^1",
+    "eslint-plugin-jsx-a11y": "^6",
+    "jsdom": "^30",
+    "prettier": "^3",
+    "prettier-plugin-astro": "^0.14",
+    "typescript": "^6",
+    "typescript-eslint": "^8",
+    "vitest": "^4"
+  }
+}

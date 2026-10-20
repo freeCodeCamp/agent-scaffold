@@ -1,0 +1,53 @@
+---
+import type { InferGetStaticPropsType, GetStaticPaths } from 'astro';
+import Layout from '../../layouts/layout.astro';
+import { Sidebar } from '../../components/sidebar';
+import CurriculumMap from '../../components/curriculum-map.astro';
+import { Lesson } from '../../components/lesson';
+import { loadCurriculum } from '../../lib/load-curriculum';
+import { toCurriculumOutline } from '../../lib/curriculum-outline';
+import { getOrderedLessons } from '../../lib/curriculum-route-utils';
+
+export const getStaticPaths = (async () => {
+  const curriculum = await loadCurriculum();
+  const curriculumOutline = toCurriculumOutline(curriculum);
+  const entries = getOrderedLessons(curriculum);
+
+  return entries.map((entry, index) => {
+    const nextEntry = entries[index + 1];
+    const isLastLesson = nextEntry === undefined;
+
+    return {
+      params: {
+        slug: entry.slug,
+      },
+      props: {
+        curriculum: curriculumOutline,
+        lesson: entry.lesson,
+        lessonSlug: entry.slug,
+        isLastLesson,
+        nextHref: isLastLesson ? '/learn' : nextEntry.href,
+      },
+    };
+  });
+}) satisfies GetStaticPaths;
+
+type Props = InferGetStaticPropsType<typeof getStaticPaths>;
+
+const { curriculum, lesson, lessonSlug, isLastLesson, nextHref } = Astro.props;
+---
+
+<Layout title={lesson.title} brand={curriculum.title} hasSidebar>
+  <div class="lesson-layout">
+    <Sidebar client:load>
+      <CurriculumMap curriculum={curriculum} currentLessonSlug={lessonSlug} />
+    </Sidebar>
+    <Lesson
+      lesson={lesson}
+      lessonSlug={lessonSlug}
+      isLastLesson={isLastLesson}
+      nextHref={nextHref}
+      client:load
+    />
+  </div>
+</Layout>

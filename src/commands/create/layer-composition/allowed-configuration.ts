@@ -4,8 +4,6 @@ const runtimeOptions = (runtimeData: Runtime) => Object.keys(runtimeData);
 const frameworkOptions = (runtimeData: Runtime, runtime: string) => runtimeData[runtime].frameworks;
 const packageManagerOptions = (runtimeData: Runtime, runtime: string) =>
   runtimeData[runtime].packageManagers;
-const databaseOptions = (runtimeData: Runtime, runtime: string) => runtimeData[runtime].databases;
-const serviceOptions = (runtimeData: Runtime, runtime: string) => runtimeData[runtime].services;
 
 const recommendedRuntimeOptions = (runtimeData: Runtime): string[] =>
   Object.entries(runtimeData)
@@ -28,20 +26,16 @@ const recommendedPackageManagerOptions = (
   );
 
 interface RuntimeCombinations {
-  databases: string[];
   frameworks: string[];
   packageManagers: string[];
-  platformServices: string[];
 }
 
 export {
-  databaseOptions,
   frameworkOptions,
   packageManagerOptions,
   recommendedFrameworkOptions,
   recommendedPackageManagerOptions,
   recommendedRuntimeOptions,
   runtimeOptions,
-  serviceOptions,
 };
 export type { RuntimeCombinations };

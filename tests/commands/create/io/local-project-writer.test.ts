@@ -18,26 +18,26 @@ describe(LocalProjectWriter, () => {
   });
 
   it("writes scaffold files into the target directory", async () => {
-    const rootDirectory = mkdtempSync(join(tmpdir(), "universe-writer-"));
+    const rootDirectory = mkdtempSync(join(tmpdir(), "agent-scaffold-writer-"));
     const writer = new LocalProjectWriter();
-    const targetDirectory = join(rootDirectory, "hello-universe");
+    const targetDirectory = join(rootDirectory, "hello-scaffold");
 
     tempDirectories.push(rootDirectory);
 
     await writer.writeProject(targetDirectory, {
       ".gitignore": "node_modules\n",
-      "src/index.ts": "console.log('hello universe');\n",
+      "src/index.ts": "console.log('hello scaffold');\n",
     });
 
     expect(readFileSync(join(targetDirectory, "src/index.ts"), "utf8")).toBe(
-      "console.log('hello universe');\n",
+      "console.log('hello scaffold');\n",
     );
   });
 
   it("creates symlinks in the target directory", async () => {
-    const rootDirectory = mkdtempSync(join(tmpdir(), "universe-writer-"));
+    const rootDirectory = mkdtempSync(join(tmpdir(), "agent-scaffold-writer-"));
     const writer = new LocalProjectWriter();
-    const targetDirectory = join(rootDirectory, "hello-universe");
+    const targetDirectory = join(rootDirectory, "hello-scaffold");
 
     tempDirectories.push(rootDirectory);
 
@@ -55,8 +55,8 @@ describe(LocalProjectWriter, () => {
   });
 
   it("removes target directory when symlink creation fails", async () => {
-    const rootDirectory = mkdtempSync(join(tmpdir(), "universe-writer-"));
-    const targetDirectory = join(rootDirectory, "hello-universe");
+    const rootDirectory = mkdtempSync(join(tmpdir(), "agent-scaffold-writer-"));
+    const targetDirectory = join(rootDirectory, "hello-scaffold");
     const writer = new LocalProjectWriter({
       mkdir,
       rm,
@@ -77,8 +77,8 @@ describe(LocalProjectWriter, () => {
   });
 
   it("removes partial scaffold output after an unrecoverable write failure", async () => {
-    const rootDirectory = mkdtempSync(join(tmpdir(), "universe-writer-"));
-    const targetDirectory = join(rootDirectory, "hello-universe");
+    const rootDirectory = mkdtempSync(join(tmpdir(), "agent-scaffold-writer-"));
+    const targetDirectory = join(rootDirectory, "hello-scaffold");
     const writeUtf8 = (
       filePath: Parameters<typeof writeFile>[0],
       content: Parameters<typeof writeFile>[1],
@@ -96,7 +96,7 @@ describe(LocalProjectWriter, () => {
     const act = () =>
       writer.writeProject(targetDirectory, {
         ".gitignore": "node_modules\n",
-        "src/index.ts": "console.log('hello universe');\n",
+        "src/index.ts": "console.log('hello scaffold');\n",
       });
 
     await expect(act()).rejects.toThrow(UsageError);

@@ -23,21 +23,21 @@ describe(composeLayerFiles, () => {
       const layers: ResolvedLayer[] = [
         {
           files: { "config/shared.txt": "auth" },
-          layerType: "services",
-          name: "services/auth",
+          layerType: "frameworks",
+          name: "frameworks/express",
           symlinks: {},
         },
         {
           files: { "config/shared.txt": "email" },
-          layerType: "services",
-          name: "services/email",
+          layerType: "frameworks",
+          name: "frameworks/typescript",
           symlinks: {},
         },
       ];
 
       expect(() => composeLayerFiles(layers)).toThrow(UsageError);
       expect(() => composeLayerFiles(layers)).toThrow(
-        'conflict detected in the services layers between "services/auth" and "services/email"',
+        'conflict detected in the frameworks layers between "frameworks/express" and "frameworks/typescript"',
       );
     });
   });
@@ -142,14 +142,14 @@ describe(composeLayerFiles, () => {
       const layers: ResolvedLayer[] = [
         {
           files: { "README.md": "# Auth\n" },
-          layerType: "services",
-          name: "services/auth",
+          layerType: "frameworks",
+          name: "frameworks/express",
           symlinks: {},
         },
         {
           files: { "README.md": "# Email\n" },
-          layerType: "services",
-          name: "services/email",
+          layerType: "frameworks",
+          name: "frameworks/typescript",
           symlinks: {},
         },
       ];

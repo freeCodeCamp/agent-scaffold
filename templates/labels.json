@@ -1,0 +1,19 @@
+{
+  "runtime": {
+    "node": "Node.js",
+    "static_web": "Static (HTML/CSS/JS)"
+  },
+  "framework": {
+    "astro-lite": "Minimal Astro template",
+    "astro-react": "Learn-like curriculum using Astro",
+    "express": "Express",
+    "html-css-js": "HTML/CSS/JS",
+    "react-vite": "React (Vite)",
+    "tanstack-shadcn": "TanStack + shadcn/ui",
+    "typescript": "TypeScript"
+  },
+  "packageManager": {
+    "bun": "bun",
+    "pnpm": "pnpm"
+  }
+}

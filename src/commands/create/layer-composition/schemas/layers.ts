@@ -3,21 +3,13 @@ import { z } from "zod";
 const AlwaysSchema = z.record(z.literal("always"), z.strictObject({}));
 type Always = z.infer<typeof AlwaysSchema>;
 
-const DatabaseOptionSchema = z.literal(["postgresql", "redis"]);
-type DatabaseOption = z.infer<typeof DatabaseOptionSchema>;
-
-const DatabaseSchema = z.record(DatabaseOptionSchema, z.strictObject({}));
-type Database = z.infer<typeof DatabaseSchema>;
-
 const RuntimeSchema = z.record(
   z.string(),
   z.strictObject({
     baseImage: z.string(),
-    databases: z.array(z.string()),
     frameworks: z.array(z.string()),
     packageManagers: z.array(z.string()),
     recommended: z.boolean().optional(),
-    services: z.array(z.string()),
   }),
 );
 type Runtime = z.infer<typeof RuntimeSchema>;
@@ -43,11 +35,6 @@ const PackageManagerSchema = z.record(
 );
 type PackageManager = z.infer<typeof PackageManagerSchema>;
 
-const ServiceOptionSchema = z.literal(["analytics", "auth", "email"]);
-type ServiceOption = z.infer<typeof ServiceOptionSchema>;
-const ServiceSchema = z.record(ServiceOptionSchema, z.strictObject({}));
-type Service = z.infer<typeof ServiceSchema>;
-
 const FrameworkSchema = z.record(
   z.string(),
   z.strictObject({
@@ -63,23 +50,5 @@ type Framework = z.infer<typeof FrameworkSchema>;
 
 type RuntimeLayerData = Pick<Runtime[string], "baseImage">;
 
-export {
-  AlwaysSchema,
-  DatabaseSchema,
-  FrameworkSchema,
-  RuntimeSchema,
-  PackageManagerSchema,
-  ServiceSchema,
-};
-export type {
-  Always,
-  Database,
-  DatabaseOption,
-  Framework,
-  PackageManager,
-  PackageManagerOption,
-  Runtime,
-  RuntimeLayerData,
-  Service,
-  ServiceOption,
-};
+export { AlwaysSchema, FrameworkSchema, RuntimeSchema, PackageManagerSchema };
+export type { Always, Framework, PackageManager, PackageManagerOption, Runtime, RuntimeLayerData };

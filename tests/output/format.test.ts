@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import type { OutputContext } from "../../src/output/format.js";
 import { outputSuccess, outputError } from "../../src/output/format.js";
-import { ProxyError } from "../../src/lib/proxy-client.js";
 import { ConfigError } from "../../src/errors.js";
 
 describe("outputSuccess", () => {
@@ -182,18 +181,6 @@ describe("outputError", () => {
   });
 
   describe("error overload (ctx, err, opts?)", () => {
-    it("formats a ProxyError via wrapProxyError and returns EXIT_CREDENTIALS", () => {
-      const logFn = vi.fn();
-      const ctx: OutputContext = { json: false, command: "deploy" };
-      const code = outputError(ctx, new ProxyError(403, "user_unauthorized", "denied"), {
-        logError: logFn,
-      });
-      expect(code).toBe(12);
-      const msg = logFn.mock.calls[0][0] as string;
-      expect(msg).toContain("deploy failed (user_unauthorized)");
-      expect(msg).toContain("read:org");
-    });
-
     it("formats a CliError and returns its exit code", () => {
       const logFn = vi.fn();
       const ctx: OutputContext = { json: false, command: "init" };
@@ -210,99 +197,14 @@ describe("outputError", () => {
       expect(logFn).toHaveBeenCalledWith("fetch failed");
     });
 
-    it("auto-merges kind and requestId into JSON envelope", () => {
-      const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-      const ctx: OutputContext = { json: true, command: "repo approve" };
-      const code = outputError(ctx, new ProxyError(500, "r2_put_failed", "timeout", "req-42"));
-      expect(code).toBe(13);
-      const parsed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
-      expect(parsed.error.kind).toBe("r2_put_failed");
-      expect(parsed.error.requestId).toBe("req-42");
-    });
-
-    it("caller-supplied kind/requestId take precedence", () => {
-      const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-      const ctx: OutputContext = { json: true, command: "deploy" };
-      outputError(ctx, new ProxyError(500, "r2_put_failed", "timeout", "req-42"), {
-        kind: "custom_kind",
-        requestId: "custom-req",
-      });
-      const parsed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
-      expect(parsed.error.kind).toBe("custom_kind");
-      expect(parsed.error.requestId).toBe("custom-req");
-    });
-
     it("passes extras through to the JSON envelope", () => {
       const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
       const ctx: OutputContext = { json: true, command: "promote" };
-      outputError(ctx, new ProxyError(409, "alias_drift", "stale"), {
+      outputError(ctx, new ConfigError("stale"), {
         extras: { current: "deploy-xyz" },
       });
       const parsed = JSON.parse(stdoutSpy.mock.calls[0][0] as string);
       expect(parsed.current).toBe("deploy-xyz");
-    });
-  });
-
-  describe("wrapProxyError authz hint (via error overload)", () => {
-    it("appends a read:org / SSO hint on user_unauthorized", () => {
-      const logFn = vi.fn();
-      const ctx: OutputContext = { json: false, command: "repo approve" };
-      const code = outputError(
-        ctx,
-        new ProxyError(403, "user_unauthorized", "caller is not on the required team"),
-        { logError: logFn },
-      );
-      expect(code).toBe(12); // EXIT_CREDENTIALS
-      const msg = logFn.mock.calls[0][0] as string;
-      expect(msg).toContain("user_unauthorized");
-      expect(msg).toMatch(/read:org/);
-      expect(msg).toMatch(/whoami/);
-      expect(msg).toMatch(/GITHUB_TOKEN/);
-    });
-
-    it("does not add the hint for unrelated proxy errors", () => {
-      const logFn = vi.fn();
-      const ctx: OutputContext = { json: false, command: "repo create" };
-      outputError(ctx, new ProxyError(409, "already_exists", "a request already exists"), {
-        logError: logFn,
-      });
-      const msg = logFn.mock.calls[0][0] as string;
-      expect(msg).not.toMatch(/read:org/);
-    });
-  });
-
-  describe("wrapProxyError server hint (via error overload)", () => {
-    it("appends the server hint on a missing_index error", () => {
-      const logFn = vi.fn();
-      const ctx: OutputContext = { json: false, command: "promote" };
-      const code = outputError(
-        ctx,
-        new ProxyError(
-          422,
-          "missing_index",
-          "target deploy has no root index.html; it cannot be served at /",
-          undefined,
-          "This looks like a framework build directory, not a static export.",
-        ),
-        { logError: logFn },
-      );
-      expect(code).toBe(13); // EXIT_STORAGE
-      const msg = logFn.mock.calls[0][0] as string;
-      expect(msg).toContain("missing_index");
-      expect(msg).toContain("hint:");
-      expect(msg).toContain("framework build directory");
-    });
-
-    it("adds no hint line when the server sent none", () => {
-      const logFn = vi.fn();
-      const ctx: OutputContext = { json: false, command: "rollback" };
-      outputError(
-        ctx,
-        new ProxyError(422, "missing_index", "target deploy has no root index.html"),
-        { logError: logFn },
-      );
-      const msg = logFn.mock.calls[0][0] as string;
-      expect(msg).not.toContain("hint:");
     });
   });
 });

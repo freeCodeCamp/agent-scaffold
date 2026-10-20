@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "serve": "^14"
+  },
+  "engines": {
+    "node": "24"
+  },
+  "name": "{{name}}",
+  "private": true,
+  "scripts": {
+    "dev": "serve public -l {{port}}"
+  }
+}

@@ -5,21 +5,17 @@ import { ConfigError } from "../../../errors.js";
 import type { LayerData, LayerRegistry } from "./resolve-ordered-layers.js";
 import {
   AlwaysSchema,
-  DatabaseSchema,
   FrameworkSchema,
   PackageManagerSchema,
   RuntimeSchema,
-  ServiceSchema,
 } from "./schemas/layers.js";
 import { LabelsSchema, type Labels } from "./schemas/labels.js";
 
 const EXPECTED_LAYER_FILES = [
   "always.json",
-  "database.json",
   "framework.json",
   "package-manager.json",
   "runtime.json",
-  "service.json",
 ] as const;
 
 const EXPECTED_ROOT_ENTRIES = ["files", "labels.json", "layers"] as const;
@@ -159,33 +155,19 @@ const loadFromDir = async (dir: string): Promise<TemplateData> => {
     const readRoot = (name: string) => readFile(join(dir, name), "utf-8");
     const filesDir = join(dir, "files");
 
-    const [labels, always, database, framework, packageManager, runtime, service] =
-      await Promise.all([
-        readRoot("labels.json").then((raw) => LabelsSchema.parse(JSON.parse(raw))),
-        readLayer("always.json").then((raw) => AlwaysSchema.parse(JSON.parse(raw))),
-        readLayer("database.json").then((raw) => DatabaseSchema.parse(JSON.parse(raw))),
-        readLayer("framework.json").then((raw) => FrameworkSchema.parse(JSON.parse(raw))),
-        readLayer("package-manager.json").then((raw) =>
-          PackageManagerSchema.parse(JSON.parse(raw)),
-        ),
-        readLayer("runtime.json").then((raw) => RuntimeSchema.parse(JSON.parse(raw))),
-        readLayer("service.json").then((raw) => ServiceSchema.parse(JSON.parse(raw))),
-      ]);
+    const [labels, always, framework, packageManager, runtime] = await Promise.all([
+      readRoot("labels.json").then((raw) => LabelsSchema.parse(JSON.parse(raw))),
+      readLayer("always.json").then((raw) => AlwaysSchema.parse(JSON.parse(raw))),
+      readLayer("framework.json").then((raw) => FrameworkSchema.parse(JSON.parse(raw))),
+      readLayer("package-manager.json").then((raw) => PackageManagerSchema.parse(JSON.parse(raw))),
+      readLayer("runtime.json").then((raw) => RuntimeSchema.parse(JSON.parse(raw))),
+    ]);
 
-    const [
-      alwaysWithFiles,
-      frameworkWithFiles,
-      pmWithFiles,
-      runtimeWithFiles,
-      serviceWithFiles,
-      databaseWithFiles,
-    ] = await Promise.all([
+    const [alwaysWithFiles, frameworkWithFiles, pmWithFiles, runtimeWithFiles] = await Promise.all([
       addLayerData(always, filesDir, "always"),
       addLayerData(framework, filesDir, "framework"),
       addLayerData(packageManager, filesDir, "package-manager"),
       addLayerData(runtime, filesDir, "runtime"),
-      addLayerData(service, filesDir, "service"),
-      addLayerData(database, filesDir, "database"),
     ]);
 
     return {
@@ -195,7 +177,6 @@ const loadFromDir = async (dir: string): Promise<TemplateData> => {
         frameworks: frameworkWithFiles,
         "package-managers": pmWithFiles,
         runtime: runtimeWithFiles,
-        services: { ...serviceWithFiles, ...databaseWithFiles },
       },
     };
   } catch (err) {

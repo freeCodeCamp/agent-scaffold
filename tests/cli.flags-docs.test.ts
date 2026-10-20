@@ -34,16 +34,7 @@ function cliFlags(group: string, command: string): string[] {
 
 describe("docs/reference.md command table", () => {
   for (const [documented, group, implemented] of [
-    ["universe static deploy", "staticCli", "deploy"],
-    ["universe static promote", "staticCli", "promote"],
-    ["universe static rollback", "staticCli", "rollback"],
-    ["universe sites list", "sitesCli", "list"],
-    ["universe sites register <slug>", "sitesCli", "register <slug>"],
-    ["universe sites update <slug>", "sitesCli", "update <slug>"],
-    ["universe sites remove <slug>", "sitesCli", "remove <slug>"],
-    ["universe sites undelete <slug>", "sitesCli", "undelete <slug>"],
-    ["universe sites release <slug>", "sitesCli", "release <slug>"],
-    ["universe audit list", "auditCli", "list"],
+    ["agent-scaffold create", "cli", "create"],
   ] as const) {
     it(`lists every ${documented} flag the CLI defines`, () => {
       const declared = cliFlags(group, implemented);

@@ -1,0 +1,122 @@
+.navigation {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.section + .section {
+  border-top: 1px solid var(--tertiary-background);
+  padding-top: var(--space-md);
+}
+
+.section summary,
+.module-block summary {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--space-xs) + 3px);
+  list-style: none;
+  cursor: pointer;
+}
+
+.section summary::-webkit-details-marker,
+.module-block summary::-webkit-details-marker {
+  display: none;
+}
+
+.section summary::before,
+.module-block summary::before {
+  content: '';
+  flex-shrink: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 4px 0 4px 5px;
+  border-color: transparent transparent transparent var(--quaternary-color);
+}
+
+.section[open] > summary::before,
+.module-block[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.section summary {
+  margin-bottom: var(--space-sm);
+}
+
+.module-block summary {
+  margin-bottom: var(--space-xs);
+}
+
+.section h2 {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--quaternary-color);
+}
+
+.module-block + .module-block {
+  margin-top: var(--space-md);
+}
+
+.module-block {
+  padding-left: var(--space-sm);
+}
+
+.module-block h3 {
+  margin: 0;
+  font-size: var(--text-size-sm);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.item + .item {
+  margin-top: var(--space-xs);
+}
+
+.item-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xs);
+  font-size: var(--text-size-xs);
+  margin-left: calc(var(--space-md) * -2);
+  margin-right: calc(-1 * var(--space-md));
+  padding: var(--space-xs) var(--space-md) var(--space-xs) calc(var(--space-md) * 3);
+}
+
+.item-link.current {
+  background: var(--secondary-background);
+  border-left: 2px solid var(--highlight-color);
+  padding-left: calc(var(--space-md) * 3 - 2px);
+}
+
+.item-link:hover {
+  background: var(--tertiary-background);
+  text-decoration: none;
+}
+
+.completed-badge {
+  margin-left: var(--space-xs);
+  font-weight: 700;
+}
+
+.badge-pending {
+  color: var(--quaternary-color);
+}
+
+.badge-complete {
+  display: none;
+  color: var(--success-color);
+}
+
+.completed-badge.completed .badge-pending {
+  display: none;
+}
+
+.completed-badge.completed .badge-complete {
+  display: inline;
+}

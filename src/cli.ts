@@ -1,29 +1,7 @@
 import { Command } from "commander";
 import { create } from "./commands/create/index.js";
-import { deploy } from "./commands/deploy.js";
-import { init } from "./commands/init.js";
-import { login } from "./commands/login.js";
-import { logout } from "./commands/logout.js";
-import { list } from "./commands/list.js";
-import { promote } from "./commands/promote.js";
-import { rollback } from "./commands/rollback.js";
-import { whoami } from "./commands/whoami.js";
-import { list as sitesList } from "./commands/sites/list.js";
-import { register as sitesRegister } from "./commands/sites/register.js";
-import { release as sitesRelease } from "./commands/sites/release.js";
-import { remove as sitesRemove } from "./commands/sites/remove.js";
-import { undelete as sitesUndelete } from "./commands/sites/undelete.js";
-import { update as sitesUpdate } from "./commands/sites/update.js";
-import { approve as repoApprove } from "./commands/repo/approve.js";
-import { create as repoCreate } from "./commands/repo/create.js";
-import { list as repoList } from "./commands/repo/list.js";
-import { reject as repoReject } from "./commands/repo/reject.js";
-import { remove as repoRemove } from "./commands/repo/remove.js";
-import { status as repoStatus } from "./commands/repo/status.js";
-import { list as auditList } from "./commands/audit/list.js";
 import { outputError } from "./output/format.js";
 import { EXIT_USAGE, exitWithCode } from "./output/exit-codes.js";
-import { installExitNotice, refreshIfStale, spawnRefresh } from "./lib/update-notifier.js";
 
 import pkg from "../package.json" with { type: "json" };
 
@@ -31,35 +9,6 @@ const version = pkg.version;
 
 function handleActionError(command: string, json: boolean, err: unknown): void {
   exitWithCode(outputError({ json, command }, err));
-}
-
-export function isVersionRequest(args: readonly string[]): boolean {
-  return args.includes("--version") || args.includes("-v");
-}
-
-function jsonOf(cmd: Command): boolean {
-  return cmd.optsWithGlobals<{ json?: boolean }>().json ?? false;
-}
-
-function namespaceGroup(name: string, description: string): Command {
-  return new Command(name)
-    .description(description)
-    .configureHelp({ showGlobalOptions: true })
-    .option("--json", "Output as JSON")
-    .exitOverride()
-    .action((_opts: unknown, cmd: Command): void => {
-      const json = jsonOf(cmd);
-      if (json) {
-        outputError(
-          { json: true, command: name },
-          EXIT_USAGE,
-          `missing ${name} subcommand — run \`universe ${name} --help\``,
-        );
-      } else {
-        cmd.outputHelp();
-      }
-      exitWithCode(EXIT_USAGE);
-    });
 }
 
 function firstPositional(args: readonly string[]): string {
@@ -70,473 +19,44 @@ function firstPositional(args: readonly string[]): string {
 }
 
 export async function run(argv = process.argv): Promise<void> {
-  installExitNotice(version);
-
   const args = argv.slice(2);
-  const versionRequested = isVersionRequest(args);
-  if (!versionRequested) {
-    spawnRefresh();
-  }
 
-  const cli = new Command("universe");
+  const cli = new Command("agent-scaffold");
   cli.exitOverride();
   cli.configureHelp({ showGlobalOptions: true });
   cli.version(version, "-v, --version", "Show version number");
   cli.option("--json", "Output as JSON");
 
-  const sitesCli = namespaceGroup("sites", "Static site registry commands");
-  const staticCli = namespaceGroup("static", "Static site deployment commands");
-  const repoCli = namespaceGroup("repo", "Repository creation + approval queue commands");
-  const auditCli = namespaceGroup("audit", "Audit trail query commands");
-
-  sitesCli
-    .command("register <slug>")
-    .description("Register a new static site (staff only)")
-    .option(
-      "--team <name>",
-      "GitHub team slug (repeatable, or comma-separated). Defaults to staff.",
-    )
-    .action(async (slug: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{
-        json?: boolean;
-        team?: string | string[];
-      }>();
-      try {
-        await sitesRegister({
-          json: opts.json ?? false,
-          slug,
-          team: opts.team,
-        });
-      } catch (err: unknown) {
-        handleActionError("sites register", opts.json ?? false, err);
-      }
-    });
-
-  sitesCli
-    .command("list")
-    .alias("ls")
-    .description("List sites in the registry")
-    .option("--mine", "Filter to sites your GitHub identity is authorized for")
-    .option("--held", "List names held by a delete instead of active sites")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean; mine?: boolean; held?: boolean }>();
-      try {
-        await sitesList({
-          json: opts.json ?? false,
-          mine: opts.mine ?? false,
-          held: opts.held ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("sites list", opts.json ?? false, err);
-      }
-    });
-
-  sitesCli
-    .command("update <slug>")
-    .description("Replace the teams list for an existing site (staff only)")
-    .option("--team <name>", "GitHub team slug (repeatable, or comma-separated). Required.")
-    .action(async (slug: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{
-        json?: boolean;
-        team?: string | string[];
-      }>();
-      try {
-        await sitesUpdate({
-          json: opts.json ?? false,
-          slug,
-          team: opts.team,
-        });
-      } catch (err: unknown) {
-        handleActionError("sites update", opts.json ?? false, err);
-      }
-    });
-
-  sitesCli
-    .command("remove <slug>")
-    .alias("rm")
-    .description("Take a site offline and hold its name — 72 hours by default (staff only)")
-    .action(async (slug: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean }>();
-      try {
-        await sitesRemove({ json: opts.json ?? false, slug });
-      } catch (err: unknown) {
-        handleActionError("sites remove", opts.json ?? false, err);
-      }
-    });
-
-  sitesCli
-    .command("undelete <slug>")
-    .description("Bring back a site deleted while its name is still held (staff only)")
-    .action(async (slug: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean }>();
-      try {
-        await sitesUndelete({ json: opts.json ?? false, slug });
-      } catch (err: unknown) {
-        handleActionError("sites undelete", opts.json ?? false, err);
-      }
-    });
-
-  sitesCli
-    .command("release <slug>")
-    .description("Free a held name now and trash its files — approvers only, not reversible")
-    .option("-y, --yes", "Skip the confirmation prompt")
-    .action(async (slug: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean; yes?: boolean }>();
-      try {
-        await sitesRelease({ json: opts.json ?? false, slug, yes: opts.yes ?? false });
-      } catch (err: unknown) {
-        handleActionError("sites release", opts.json ?? false, err);
-      }
-    });
-
-  repoCli
-    .command("create [name]")
-    .description("Request a new repository under freeCodeCamp-Universe (staff only)")
-    .option("--visibility <vis>", "public or private (default: private)")
-    .option("--description <text>", "Repository description")
-    .option("--template <name>", "Org template repo to generate from; omit for a blank repo")
-    .option("--yes", "Skip confirmation prompts (required for non-TTY/CI)")
-    .action(async (name: string | undefined, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{
-        json?: boolean;
-        visibility?: string;
-        description?: string;
-        template?: string;
-        yes?: boolean;
-      }>();
-      try {
-        await repoCreate({
-          json: opts.json ?? false,
-          name,
-          visibility: opts.visibility,
-          description: opts.description,
-          template: opts.template,
-          yes: opts.yes ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("repo create", opts.json ?? false, err);
-      }
-    });
-
-  repoCli
-    .command("list")
-    .alias("ls")
-    .description("List repo requests (default: pending)")
-    .option("--status <status>", "pending | approved | active | rejected | failed | all")
-    .option("--mine", "Only requests you submitted")
-    .option("--all", "Show every state (shorthand for --status all)")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{
-        json?: boolean;
-        status?: string;
-        mine?: boolean;
-        all?: boolean;
-      }>();
-      try {
-        await repoList({
-          json: opts.json ?? false,
-          status: opts.status,
-          mine: opts.mine ?? false,
-          all: opts.all ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("repo list", opts.json ?? false, err);
-      }
-    });
-
-  repoCli
-    .command("approve <id>")
-    .description("Approve a pending request — creates the repo (admin only)")
-    .option("--yes", "Skip confirmation prompts (required for non-TTY/CI)")
-    .action(async (id: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean; yes?: boolean }>();
-      try {
-        await repoApprove({
-          json: opts.json ?? false,
-          id,
-          yes: opts.yes ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("repo approve", opts.json ?? false, err);
-      }
-    });
-
-  repoCli
-    .command("reject <id>")
-    .description("Reject a pending request (admin only)")
-    .option("--reason <text>", "Reason shown to the requester")
-    .option("--yes", "Skip confirmation prompts (required for non-TTY/CI)")
-    .action(async (id: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{
-        json?: boolean;
-        reason?: string;
-        yes?: boolean;
-      }>();
-      try {
-        await repoReject({
-          json: opts.json ?? false,
-          id,
-          reason: opts.reason,
-          yes: opts.yes ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("repo reject", opts.json ?? false, err);
-      }
-    });
-
-  repoCli
-    .command("status <id>")
-    .description("Show a request's current state")
-    .action(async (id: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean }>();
-      try {
-        await repoStatus({ json: opts.json ?? false, id });
-      } catch (err: unknown) {
-        handleActionError("repo status", opts.json ?? false, err);
-      }
-    });
-
-  repoCli
-    .command("remove <id>")
-    .alias("rm")
-    .description("Delete a request, freeing its repo name (admin only)")
-    .option("--yes", "Skip confirmation prompts (required for non-TTY/CI)")
-    .action(async (id: string, _opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean; yes?: boolean }>();
-      try {
-        await repoRemove({
-          json: opts.json ?? false,
-          id,
-          yes: opts.yes ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("repo remove", opts.json ?? false, err);
-      }
-    });
-
-  staticCli
-    .command("deploy")
-    .description("Deploy static site via the artemis proxy")
-    .option("--promote", "Finalize as production (default: preview)")
-    .option("--dir <path>", "Override build.output dir from platform.yaml")
-    .option("--no-reuse", "Always rebuild; never promote an existing preview")
-    .option("--allow-dirty", "Deploy files that do not match a clean HEAD (dirty tree or --dir)")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{
-        json?: boolean;
-        promote?: boolean;
-        dir?: string;
-        reuse?: boolean;
-        allowDirty?: boolean;
-      }>();
-      try {
-        await deploy({
-          json: opts.json ?? false,
-          promote: opts.promote ?? false,
-          dir: opts.dir,
-          noReuse: opts.reuse === false,
-          allowDirty: opts.allowDirty ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("deploy", opts.json ?? false, err);
-      }
-    });
-
-  staticCli
-    .command("promote")
-    .description("Promote the current preview to production")
-    .option("--from <deployId>", "Promote a specific past deploy id (alias rewrite)")
-    .option("--allow-dirty", "Promote a deploy stamped from a dirty tree or a --dir override")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean; from?: string; allowDirty?: boolean }>();
-      try {
-        await promote({
-          json: opts.json ?? false,
-          from: opts.from,
-          allowDirty: opts.allowDirty ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("promote", opts.json ?? false, err);
-      }
-    });
-
-  staticCli
-    .command("rollback")
-    .description("Rewrite production alias to a past deploy")
-    .option("--to <deployId>", "Target deploy id (required)")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean; to?: string }>();
-      try {
-        await rollback({
-          json: opts.json ?? false,
-          to: opts.to,
-        });
-      } catch (err: unknown) {
-        handleActionError("rollback", opts.json ?? false, err);
-      }
-    });
-
-  staticCli
-    .command("list")
-    .alias("ls")
-    .description("List recent deploys for a site")
-    .option("--site <site>", "Override site from platform.yaml")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean; site?: string }>();
-      try {
-        await list({
-          json: opts.json ?? false,
-          site: opts.site,
-        });
-      } catch (err: unknown) {
-        handleActionError("list", opts.json ?? false, err);
-      }
-    });
-
   cli
     .command("create")
     .description("Scaffold a new project locally")
-    .option("--force-fetch", "Re-download templates even if cached")
     .option("--yes", "Skip prompts; use flag values (required for non-TTY/CI)")
     .option("--name <name>", "Project name (required in non-interactive mode)")
     .option("--runtime <runtime>", "Runtime: e.g. node | static_web")
     .option("--framework <framework>", "Framework (must be valid for chosen runtime)")
-    .option("--database <db...>", "Databases")
-    .option("--service <svc...>", "Platform services")
     .option("--pkg-manager <pm>", "Package manager: e.g pnpm | bun")
     .action(async (_opts, cmd: Command) => {
       const opts = cmd.optsWithGlobals<{
-        forceFetch?: boolean;
         json?: boolean;
         yes?: boolean;
         name?: string;
         runtime?: string;
         framework?: string;
-        database?: string[];
-        service?: string[];
         pkgManager?: string;
       }>();
       try {
         await create({
-          forceFetch: opts.forceFetch ?? false,
           json: opts.json ?? false,
           yes: opts.yes ?? false,
           name: opts.name,
           runtime: opts.runtime,
           framework: opts.framework,
-          databases: opts.database,
-          services: opts.service,
           packageManager: opts.pkgManager,
         });
       } catch (err: unknown) {
         handleActionError("create", opts.json ?? false, err);
       }
     });
-
-  cli
-    .command("init")
-    .description("Scaffold a platform.yaml in the current directory")
-    .option("--site <slug>", "Override the derived site slug")
-    .option("--dir <path>", "Build output directory to upload (default: dist)")
-    .option("--force", "Overwrite an existing platform.yaml")
-    .option("--yes", "Skip prompts; write derived defaults (non-TTY/CI)")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{
-        json?: boolean;
-        site?: string;
-        dir?: string;
-        force?: boolean;
-        yes?: boolean;
-      }>();
-      try {
-        await init({
-          json: opts.json ?? false,
-          site: opts.site,
-          dir: opts.dir,
-          force: opts.force ?? false,
-          yes: opts.yes ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("init", opts.json ?? false, err);
-      }
-    });
-
-  cli
-    .command("login")
-    .description("Authenticate with GitHub via OAuth device flow")
-    .option("--force", "Replace any existing stored token")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean; force?: boolean }>();
-      try {
-        await login({
-          json: opts.json ?? false,
-          force: opts.force ?? false,
-        });
-      } catch (err: unknown) {
-        handleActionError("login", opts.json ?? false, err);
-      }
-    });
-
-  cli
-    .command("logout")
-    .description("Remove the stored GitHub device-flow token")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean }>();
-      try {
-        await logout({ json: opts.json ?? false });
-      } catch (err: unknown) {
-        handleActionError("logout", opts.json ?? false, err);
-      }
-    });
-
-  cli
-    .command("whoami")
-    .description("Show resolved GitHub identity and authorized sites")
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{ json?: boolean }>();
-      try {
-        await whoami({ json: opts.json ?? false });
-      } catch (err: unknown) {
-        handleActionError("whoami", opts.json ?? false, err);
-      }
-    });
-
-  auditCli
-    .command("list")
-    .alias("ls")
-    .description("List durable audit events (who did what)")
-    .option("--actor <login>", "Filter by GitHub actor")
-    .option("--action <action>", "Filter by action (e.g. repo.approve)")
-    .option("--site <slug>", "Filter by site")
-    .option("--since <rfc3339>", "Only events at or after this timestamp")
-    .option("--limit <n>", "Max rows (default 100, max 500)", (v: string) => Number.parseInt(v, 10))
-    .action(async (_opts, cmd: Command) => {
-      const opts = cmd.optsWithGlobals<{
-        json?: boolean;
-        actor?: string;
-        action?: string;
-        site?: string;
-        since?: string;
-        limit?: number;
-      }>();
-      try {
-        await auditList({
-          json: opts.json ?? false,
-          actor: opts.actor,
-          action: opts.action,
-          site: opts.site,
-          since: opts.since,
-          limit: opts.limit,
-        });
-      } catch (err: unknown) {
-        handleActionError("audit list", opts.json ?? false, err);
-      }
-    });
-
-  cli.addCommand(staticCli);
-  cli.addCommand(sitesCli);
-  cli.addCommand(repoCli);
-  cli.addCommand(auditCli);
 
   if (args.length === 0) {
     cli.outputHelp();
@@ -561,9 +81,5 @@ export async function run(argv = process.argv): Promise<void> {
       outputError({ json, command }, EXIT_USAGE, message);
       exitWithCode(EXIT_USAGE);
     }
-  }
-
-  if (versionRequested) {
-    await refreshIfStale(Date.now(), { force: true });
   }
 }

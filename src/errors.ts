@@ -9,17 +9,8 @@ import {
 } from "./output/exit-codes.js";
 
 /**
- * Domain error hierarchy for the proxy-plane CLI.
- *
- * Each subclass binds to a stable EXIT_* code from `output/exit-codes`
- * so callers (cli.ts handler + per-command catches) can map exceptions
- * to process exit codes without `instanceof` ladders.
- *
- * Pre-pivot subclasses (`OutputDirError`, `AliasError`,
- * `DeployNotFoundError`) were tied to the v0.3 direct-S3 plane and
- * deleted with the storage modules. Their EXIT_* numeric codes remain
- * exported from `output/exit-codes` as stable contracts (per
- * `CLAUDE.md` non-obvious conventions).
+ * Domain error hierarchy. Each subclass binds to a stable EXIT_* code from
+ * `output/exit-codes`.
  */
 
 export abstract class CliError extends Error {

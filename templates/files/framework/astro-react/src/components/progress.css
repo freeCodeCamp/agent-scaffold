@@ -1,0 +1,91 @@
+.progress-headline {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.progress-headline .animated-count {
+  font-weight: 700;
+}
+
+.progress-percent-label {
+  color: var(--quaternary-color);
+}
+
+@property --p {
+  syntax: '<integer>';
+  initial-value: 0;
+  inherits: false;
+}
+
+.progress-bar {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  margin-bottom: var(--space-md);
+  background: var(--quaternary-background);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: calc(var(--p) * 1%);
+  background: var(--gray-45);
+  border-radius: var(--radius-sm);
+  transition: --p 0.4s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-bar-fill {
+    transition: none;
+  }
+}
+
+.progress-lesson-count {
+  font-weight: 700;
+}
+
+.progress-section-list {
+  list-style: none;
+  margin: 0 0 var(--space-md);
+  padding: 0;
+}
+
+.progress-section-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--quaternary-background);
+}
+
+.progress-complete-message {
+  font-weight: 700;
+  color: var(--success-color);
+}
+
+.progress-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.progress-actions-data {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.progress-file-input {
+  display: none;
+}
+
+.progress-feedback {
+  margin-top: var(--space-sm);
+  min-height: 1.5em;
+  color: var(--quaternary-color);
+}

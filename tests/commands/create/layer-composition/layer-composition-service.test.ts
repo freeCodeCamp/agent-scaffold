@@ -15,20 +15,16 @@ describe(LayerCompositionService, () => {
   });
 
   const nodeExpressSelection: CreateSelections = {
-    databases: [],
     framework: "express",
     name: "test",
     packageManager: "pnpm",
-    platformServices: [],
     runtime: "node",
   };
 
   const staticSelection: CreateSelections = {
-    databases: [],
     framework: "html-css-js",
     name: "test",
     packageManager: "pnpm",
-    platformServices: [],
     runtime: "static_web",
   };
 

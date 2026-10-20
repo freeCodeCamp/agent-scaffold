@@ -1,0 +1,22 @@
+---
+import Layout from '../../layouts/layout.astro';
+import CurriculumMap from '../../components/curriculum-map.astro';
+import { loadCurriculum } from '../../lib/load-curriculum';
+import { toCurriculumOutline } from '../../lib/curriculum-outline';
+
+import '../../styles/pages.css';
+
+const curriculum = await loadCurriculum();
+const curriculumOutline = toCurriculumOutline(curriculum);
+---
+
+<Layout title={`${curriculum.title}`} brand={curriculum.title}>
+  <main id="main-content" class="main" tabindex="-1">
+    <header class="page-heading">
+      <h1 class="page-label">Learn</h1>
+      <hr class="page-label-divider" />
+    </header>
+
+    <CurriculumMap curriculum={curriculumOutline} />
+  </main>
+</Layout>

@@ -1,26 +1,25 @@
 {
-  "name": "@freecodecamp/universe-cli",
+  "name": "@freecodecamp/agent-scaffold",
   "version": "0.21.0",
-  "description": "Static site deployment CLI for the freeCodeCamp Universe platform",
+  "description": "Scaffold new projects for humans and coding agents",
   "keywords": [
+    "agents",
     "cli",
-    "deployment",
     "freecodecamp",
-    "static-site"
+    "scaffold"
   ],
-  "homepage": "https://github.com/freeCodeCamp-Universe/universe-cli#readme",
+  "homepage": "https://github.com/freeCodeCamp/agent-scaffold#readme",
   "bugs": {
-    "url": "https://github.com/freeCodeCamp-Universe/universe-cli/issues"
+    "url": "https://github.com/freeCodeCamp/agent-scaffold/issues"
   },
   "license": "BSD-3-Clause",
   "author": "Mrugesh Mohapatra <noreply@mrugesh.dev> (https://mrugesh.dev/)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/freeCodeCamp-Universe/universe-cli.git"
+    "url": "git+https://github.com/freeCodeCamp/agent-scaffold.git"
   },
   "bin": {
-    "create-constellation-app": "bin/create-constellation-app.mjs",
-    "universe": "dist/index.cjs"
+    "agent-scaffold": "dist/index.cjs"
   },
   "files": [
     "dist/",
@@ -34,8 +33,7 @@
   },
   "scripts": {
     "test": "vitest run",
-    "test:smoke": "UNIVERSE_E2E_REAL=1 vitest run tests/e2e/smoke-real-artemis.test.ts",
-    "build": "tsdown",
+    "build": "tsdown && tar -czf dist/templates.tgz -C templates .",
     "lint": "oxlint src tests",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "prepare": "husky",
@@ -56,7 +54,6 @@
     "husky": "^9.1.7",
     "oxfmt": "^0.59.0",
     "oxlint": "^1.68.0",
-    "postject": "1.0.0-alpha.6",
     "tsdown": "0.22.1",
     "tsx": "4.22.4",
     "typescript": "^5.9.3",

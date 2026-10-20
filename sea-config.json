@@ -1,6 +1,0 @@
-{
-  "main": "dist/index.cjs",
-  "output": "dist/sea.blob",
-  "disableExperimentalSEAWarning": true,
-  "useCodeCache": true
-}
