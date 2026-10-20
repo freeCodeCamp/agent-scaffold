@@ -1,6 +1,6 @@
-# agent-scaffold
+# freeCodeCamp Scaffold Tool
 
-Scaffold new projects for humans and coding agents.
+Make coding agents less dumb. Save time, money, sanity.
 
 ## Install
 
