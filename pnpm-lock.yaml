@@ -7,29 +7,16 @@ settings:
 importers:
 
   .:
-    dependencies:
+    devDependencies:
       '@clack/prompts':
         specifier: ^1.5.0
         version: 1.5.0
-      commander:
-        specifier: 14.0.3
-        version: 14.0.3
-      semver:
-        specifier: ^7.8.5
-        version: 7.8.5
-      yaml:
-        specifier: ^2.9.0
-        version: 2.9.0
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
-    devDependencies:
       '@types/node':
         specifier: ^24.12.2
         version: 24.12.2
-      '@types/semver':
-        specifier: ^7.7.1
-        version: 7.7.1
+      commander:
+        specifier: 14.0.3
+        version: 14.0.3
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -51,6 +38,12 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/node@24.12.2)(tsx@4.22.4)(yaml@2.9.0)
+      yaml:
+        specifier: ^2.9.0
+        version: 2.9.0
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
 packages:
 
@@ -926,9 +919,6 @@ packages:
 
   '@types/node@24.12.2':
     resolution: {integrity: sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==}
-
-  '@types/semver@7.7.1':
-    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@vitest/expect@3.2.4':
     resolution: {integrity: sha512-Io0yyORnB6sikFlt8QW5K7slY4OjqNX9jmJQ02QDda8lyM6B5oNgVWoSoKPac8/kgnCUzuHQKrSLtu/uOqqrig==}
@@ -1877,8 +1867,6 @@ snapshots:
   '@types/node@24.12.2':
     dependencies:
       undici-types: 7.16.0
-
-  '@types/semver@7.7.1': {}
 
   '@vitest/expect@3.2.4':
     dependencies:
