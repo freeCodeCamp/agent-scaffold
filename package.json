@@ -33,13 +33,14 @@
   },
   "scripts": {
     "test": "vitest run",
-    "build": "tsdown && tar -czf dist/templates.tgz -C templates .",
+    "build": "tsdown && COPYFILE_DISABLE=1 tar -czf dist/templates.tgz -C templates . && node scripts/check-templates-tgz.mjs",
     "lint": "oxlint src tests",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json --noEmit",
     "prepare": "husky",
     "dev": "tsx src/index.ts",
     "fmt": "oxfmt",
-    "fmt:check": "oxfmt --check"
+    "fmt:check": "oxfmt --check",
+    "prepublishOnly": "node scripts/check-templates-tgz.mjs"
   },
   "devDependencies": {
     "@clack/prompts": "^1.5.0",
